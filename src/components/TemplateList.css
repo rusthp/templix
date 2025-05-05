@@ -1,0 +1,226 @@
+/* Estilo geral do container da lista */
+.template-list-container {
+  width: 100%;
+  padding: 15px;
+  overflow: auto;
+}
+
+/* Estilo da tabela */
+.template-list {
+  width: 100%;
+  border-collapse: collapse;
+  border-radius: 8px;
+  overflow: hidden;
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+  background-color: #fff;
+}
+
+/* Cabeçalho */
+.template-list-header {
+  display: grid;
+  grid-template-columns: 2.5fr 1fr 1fr 1fr 2fr;
+  background-color: #f0f8ff;
+  border-bottom: 2px solid #ddd;
+  font-weight: bold;
+  height: 50px;
+}
+
+.header-cell {
+  padding: 12px 15px;
+  text-align: center;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  position: relative;
+  transition: background-color 0.2s;
+  border-right: 1px solid #ddd;
+}
+
+.header-cell:last-child {
+  border-right: none;
+}
+
+.header-cell:hover {
+  background-color: #e6f2ff;
+}
+
+/* Indicadores de ordenação */
+.header-cell.sort-ascending::after {
+  content: "▲";
+  margin-left: 8px;
+  font-size: 10px;
+}
+
+.header-cell.sort-descending::after {
+  content: "▼";
+  margin-left: 8px;
+  font-size: 10px;
+}
+
+/* Cabeçalho de ações (não ordenável) */
+.actions-header {
+  cursor: default !important;
+}
+
+.actions-header:hover {
+  background-color: #f0f8ff !important;
+}
+
+/* Corpo da tabela */
+.template-list-body {
+  max-height: 500px;
+  overflow-y: auto;
+}
+
+/* Linhas da tabela */
+.template-item {
+  display: grid;
+  grid-template-columns: 2.5fr 1fr 1fr 1fr 2fr;
+  border-bottom: 1px solid #eee;
+  transition: background-color 0.2s;
+  cursor: pointer;
+}
+
+.template-item:hover {
+  background-color: #f9f9f9;
+}
+
+.template-item.selected {
+  background-color: #e6f7ff;
+  border-left: 4px solid #1890ff;
+}
+
+/* Células da tabela */
+.template-cell {
+  padding: 12px 15px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  border-right: 1px solid #eee;
+  min-height: 50px;
+  word-break: break-word;
+}
+
+.template-cell:last-child {
+  border-right: none;
+}
+
+/* Coluna de nome (alinhado à esquerda) */
+.template-name {
+  justify-content: flex-start;
+  text-align: left;
+  font-weight: 500;
+}
+
+/* Botões de ação */
+.template-cell.actions {
+  display: flex;
+  gap: 6px;
+  justify-content: center;
+  flex-wrap: wrap;
+}
+
+.action-btn {
+  padding: 6px 10px;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: 12px;
+  transition: background-color 0.2s, transform 0.1s;
+  white-space: nowrap;
+  margin: 2px;
+}
+
+.action-btn:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+}
+
+/* Estilos específicos por tipo de botão */
+.export-btn {
+  background-color: #1890ff;
+  color: white;
+}
+
+.export-btn:hover {
+  background-color: #0c7ddd;
+}
+
+.convert-btn {
+  background-color: #673ab7;
+  color: white;
+}
+
+.convert-btn:hover {
+  background-color: #5e35b1;
+}
+
+.delete-btn {
+  background-color: #f44336;
+  color: white;
+}
+
+.delete-btn:hover {
+  background-color: #e53935;
+}
+
+/* Refresh button */
+.refresh-button {
+  position: absolute;
+  top: 15px;
+  right: 15px;
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  background-color: #1890ff;
+  border: none;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: transform 0.3s, background-color 0.3s;
+}
+
+.refresh-button:hover {
+  background-color: #0c7ddd;
+  transform: rotate(30deg);
+}
+
+.refresh-button svg {
+  width: 24px;
+  height: 24px;
+  fill: white;
+}
+
+.refresh-button.refreshing {
+  animation: rotate 1s infinite linear;
+}
+
+@keyframes rotate {
+  from {
+    transform: rotate(0deg);
+  }
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+/* Mensagem quando não há templates */
+.template-list.empty {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  height: 200px;
+  border: 1px dashed #ccc;
+  border-radius: 8px;
+  background-color: #f9f9f9;
+}
+
+.empty-message {
+  color: #888;
+  font-size: 16px;
+  text-align: center;
+} 

@@ -1,0 +1,235 @@
+import React, { useState, useEffect } from 'react';
+import './App.css';
+import TemplateList from './components/TemplateList';
+import TemplateDetails from './components/TemplateDetails';
+import Sidebar from './components/Sidebar';
+import SearchGithub from './components/SearchGithub';
+import { getAllTemplates, importTemplate, exportTemplate, searchGithub, convertTemplateFormat, deleteTemplate } from './utils/electronAPI';
+
+const { ipcRenderer } = window.require('electron');
+
+function App() {
+  const [templates, setTemplates] = useState([]);
+  const [selectedTemplate, setSelectedTemplate] = useState(null);
+  const [activeTab, setActiveTab] = useState('local'); // 'local' ou 'github'
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState(null);
+  const [searchQuery, setSearchQuery] = useState('');
+  const [githubResults, setGithubResults] = useState([]);
+
+  // Carregar templates ao iniciar
+  useEffect(() => {
+    loadTemplates();
+  }, []);
+
+  // Função para carregar todos os templates
+  const loadTemplates = async () => {
+    setLoading(true);
+    try {
+      const data = await getAllTemplates();
+      setTemplates(data);
+      setError(null);
+    } catch (err) {
+      setError(err.message || 'Erro ao carregar templates');
+      console.error('Erro ao carregar templates:', err);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  // Função para importar um template
+  const handleImportTemplate = async () => {
+    try {
+      setLoading(true);
+      setError(null);
+      
+      const result = await importTemplate();
+      
+      if (result.error) {
+        // Se o backend retornou um objeto de erro
+        setError(`Erro: ${result.error}. ${result.message || ''}`);
+        console.error('Erro ao importar template:', result);
+      } else if (!result.canceled) {
+        // Template importado com sucesso, atualizar a lista
+        loadTemplates();
+      }
+    } catch (err) {
+      console.error('Exceção ao importar template:', err);
+      
+      // Tentar extrair detalhes do erro se for um erro da IPC
+      let errorMessage = err.message || 'Erro desconhecido ao importar template';
+      
+      // Se o erro contém "[object Object]", provavelmente é um objeto JSON mal formatado
+      if (errorMessage.includes('[object Object]')) {
+        errorMessage = 'Erro ao processar o template. Verifique se o formato do arquivo é válido.';
+      }
+      
+      setError(errorMessage);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  // Função para exportar um template
+  const handleExportTemplate = async (templateId) => {
+    try {
+      await exportTemplate(templateId);
+    } catch (err) {
+      setError(err.message || 'Erro ao exportar template');
+      console.error('Erro ao exportar template:', err);
+    }
+  };
+
+  // Função para converter o formato de um template
+  const handleConvertFormat = async (templateId, targetFormat) => {
+    try {
+      setLoading(true);
+      setError(null);
+      
+      const result = await convertTemplateFormat(templateId, targetFormat);
+      
+      if (result.error) {
+        setError(`Erro: ${result.error}. ${result.message || ''}`);
+        console.error('Erro ao converter template:', result);
+      } else if (result.warning) {
+        setError(`Aviso: ${result.message}`);
+      } else if (result.success) {
+        // Se importou o template convertido, recarregar a lista
+        if (result.imported) {
+          loadTemplates();
+        }
+      }
+    } catch (err) {
+      console.error('Exceção ao converter template:', err);
+      setError(err.message || 'Erro desconhecido ao converter template');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  // Função para excluir um template
+  const handleDeleteTemplate = async (templateId) => {
+    try {
+      setLoading(true);
+      setError(null);
+      
+      const result = await deleteTemplate(templateId);
+      
+      if (result.error) {
+        setError(`Erro: ${result.error}. ${result.message || ''}`);
+        console.error('Erro ao excluir template:', result);
+      } else if (result.success) {
+        // Se o template excluído for o selecionado, limpar a seleção
+        if (selectedTemplate && selectedTemplate.id === templateId) {
+          setSelectedTemplate(null);
+        }
+        // Atualizar a lista de templates
+        loadTemplates();
+      }
+    } catch (err) {
+      console.error('Exceção ao excluir template:', err);
+      setError(err.message || 'Erro desconhecido ao excluir template');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  // Função para buscar no GitHub
+  const handleSearchGithub = async (query) => {
+    if (!query.trim()) return;
+    
+    setLoading(true);
+    try {
+      const results = await searchGithub(query);
+      setGithubResults(results);
+      setError(null);
+    } catch (err) {
+      setError(err.message || 'Erro ao buscar no GitHub');
+      console.error('Erro ao buscar no GitHub:', err);
+      setGithubResults([]);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  // Callback para quando um template é importado do GitHub
+  const handleGithubImport = async () => {
+    // Recarrega os templates e mostra a aba local
+    await loadTemplates();
+    setActiveTab('local');
+  };
+
+  // Filtrar templates locais com base na busca
+  const filteredTemplates = templates.filter(template => 
+    template.name.toLowerCase().includes(searchQuery.toLowerCase()) || 
+    (template.version && template.version.toLowerCase().includes(searchQuery.toLowerCase()))
+  );
+
+  return (
+    <div className="app">
+      <header className="app-header">
+        <h1>Templix</h1>
+        <p>Gerenciador de Templates Zabbix</p>
+      </header>
+      
+      <div className="app-content">
+        <Sidebar 
+          activeTab={activeTab} 
+          setActiveTab={setActiveTab}
+          onImportTemplate={handleImportTemplate}
+        />
+        
+        <main className="main-content">
+          <div className="search-bar">
+            <input
+              type="text"
+              placeholder={`Buscar ${activeTab === 'local' ? 'templates locais' : 'no GitHub'}...`}
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+              onKeyPress={(e) => {
+                if (e.key === 'Enter' && activeTab === 'github') {
+                  handleSearchGithub(searchQuery);
+                }
+              }}
+            />
+            {activeTab === 'github' && (
+              <button onClick={() => handleSearchGithub(searchQuery)}>Buscar</button>
+            )}
+          </div>
+          
+          {error && <div className="error-message">{error}</div>}
+          
+          {loading ? (
+            <div className="loading">Carregando...</div>
+          ) : (
+            <>
+              {activeTab === 'local' ? (
+                <div className="templates-container">
+                  <TemplateList 
+                    templates={filteredTemplates} 
+                    onSelectTemplate={setSelectedTemplate}
+                    selectedTemplate={selectedTemplate}
+                    onExportTemplate={handleExportTemplate}
+                    onConvertFormat={handleConvertFormat}
+                    onDeleteTemplate={handleDeleteTemplate}
+                    onRefresh={loadTemplates}
+                  />
+                  {selectedTemplate && (
+                    <TemplateDetails template={selectedTemplate} />
+                  )}
+                </div>
+              ) : (
+                <SearchGithub 
+                  results={githubResults} 
+                  onImport={handleGithubImport} 
+                />
+              )}
+            </>
+          )}
+        </main>
+      </div>
+    </div>
+  );
+}
+
+export default App; 

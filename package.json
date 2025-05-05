@@ -1,0 +1,66 @@
+{
+  "name": "templix",
+  "version": "1.0.0",
+  "description": "Templix - Gerenciador de Templates Zabbix",
+  "main": "electron/main.js",
+  "scripts": {
+    "start": "concurrently \"npm run start:react\" \"npm run start:electron\"",
+    "start:react": "cross-env BROWSER=none react-app-rewired start",
+    "start:electron": "wait-on http://localhost:3000 && electron .",
+    "build": "react-app-rewired build && electron-builder",
+    "test": "react-app-rewired test",
+    "eject": "react-scripts eject"
+  },
+  "build": {
+    "appId": "com.zabbix.templix",
+    "productName": "Templix",
+    "files": [
+      "build/**/*",
+      "electron/**/*"
+    ],
+    "directories": {
+      "buildResources": "assets"
+    }
+  },
+  "keywords": [
+    "zabbix",
+    "template",
+    "manager",
+    "electron"
+  ],
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "@electron/remote": "^2.1.2",
+    "axios": "^1.9.0",
+    "concurrently": "^9.1.2",
+    "cross-env": "^7.0.3",
+    "electron": "^36.1.0",
+    "electron-builder": "^26.0.12",
+    "electron-is-dev": "^3.0.1",
+    "js-yaml": "^4.1.0",
+    "path-browserify": "^1.0.1",
+    "react": "^19.1.0",
+    "react-dom": "^19.1.0",
+    "react-scripts": "^5.0.1",
+    "sqlite3": "^5.1.7",
+    "wait-on": "^8.0.3",
+    "xml2js": "^0.6.2",
+    "xmlbuilder": "^15.1.1"
+  },
+  "browserslist": {
+    "production": [
+      ">0.2%",
+      "not dead",
+      "not op_mini all"
+    ],
+    "development": [
+      "last 1 chrome version",
+      "last 1 firefox version",
+      "last 1 safari version"
+    ]
+  },
+  "devDependencies": {
+    "react-app-rewired": "^2.2.1"
+  }
+}

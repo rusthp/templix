@@ -1,0 +1,386 @@
+/* Estilos globais */
+* {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+body {
+  font-family: 'Segoe UI', 'Roboto', 'Oxygen', 'Ubuntu', 'Cantarell', sans-serif;
+  background-color: #f5f5f5;
+  color: #333;
+}
+
+/* Layout principal */
+.app {
+  display: flex;
+  flex-direction: column;
+  height: 100vh;
+}
+
+.app-header {
+  background-color: #1976d2;
+  color: white;
+  padding: 1rem 2rem;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+.app-header h1 {
+  font-size: 1.8rem;
+  margin-bottom: 0.25rem;
+}
+
+.app-header p {
+  font-size: 0.9rem;
+  opacity: 0.9;
+}
+
+.app-content {
+  display: flex;
+  flex: 1;
+  overflow: hidden;
+}
+
+/* Sidebar */
+.sidebar {
+  width: 240px;
+  background-color: #fff;
+  border-right: 1px solid #e0e0e0;
+  display: flex;
+  flex-direction: column;
+  padding: 1rem 0;
+}
+
+.sidebar-nav {
+  margin-bottom: 2rem;
+}
+
+.sidebar-nav button {
+  display: block;
+  width: 100%;
+  text-align: left;
+  padding: 0.75rem 1.5rem;
+  background: none;
+  border: none;
+  cursor: pointer;
+  font-size: 1rem;
+  color: #555;
+  transition: background-color 0.2s;
+}
+
+.sidebar-nav button:hover {
+  background-color: #f0f0f0;
+}
+
+.sidebar-nav button.active {
+  background-color: #e3f2fd;
+  color: #1976d2;
+  font-weight: 500;
+  border-left: 3px solid #1976d2;
+}
+
+.sidebar-actions {
+  padding: 0 1rem;
+}
+
+.sidebar-actions button {
+  width: 100%;
+  padding: 0.75rem;
+  background-color: #1976d2;
+  color: white;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: 0.9rem;
+  font-weight: 500;
+  transition: background-color 0.2s;
+}
+
+.sidebar-actions button:hover {
+  background-color: #1565c0;
+}
+
+/* Conteúdo principal */
+.main-content {
+  flex: 1;
+  padding: 1.5rem;
+  overflow-y: auto;
+  display: flex;
+  flex-direction: column;
+  height: calc(100vh - 64px); /* Altura da janela menos a altura do cabeçalho */
+}
+
+/* Container para lista de templates e detalhes */
+.templates-container {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  overflow: hidden;
+}
+
+/* Quando os detalhes estão visíveis, ajustar a altura da lista */
+.templates-container .template-list {
+  flex: 1;
+  max-height: calc(100vh - 300px); /* Espaço para cabeçalho, barra de busca e detalhes */
+}
+
+/* Barra de busca */
+.search-bar {
+  display: flex;
+  margin-bottom: 1.5rem;
+  position: sticky;
+  top: 0;
+  z-index: 10;
+  background-color: #f5f5f5;
+  padding: 10px 0;
+}
+
+.search-bar input {
+  flex: 1;
+  padding: 0.75rem;
+  border: 1px solid #ddd;
+  border-radius: 4px;
+  font-size: 1rem;
+  outline: none;
+  background-color: white;
+}
+
+.search-bar input:focus {
+  border-color: #1976d2;
+  box-shadow: 0 0 0 2px rgba(25, 118, 210, 0.1);
+}
+
+.search-bar button {
+  margin-left: 0.5rem;
+  padding: 0 1rem;
+  background-color: #1976d2;
+  color: white;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+  font-weight: 500;
+  white-space: nowrap;
+}
+
+/* Lista de templates */
+.template-list {
+  background-color: #fff;
+  border-radius: 8px;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+  overflow-y: auto;
+  margin-bottom: 1.5rem;
+  max-height: calc(100vh - 180px); /* Limitar altura para permitir rolagem em telas pequenas */
+}
+
+.template-list-header {
+  display: grid;
+  grid-template-columns: 2fr 1fr 1fr 1fr auto;
+  padding: 1rem;
+  font-weight: 500;
+  background-color: #f7f7f7;
+  border-bottom: 1px solid #eee;
+  position: sticky;
+  top: 0;
+  z-index: 1;
+}
+
+.template-item {
+  display: grid;
+  grid-template-columns: 2fr 1fr 1fr 1fr auto;
+  padding: 1rem;
+  border-bottom: 1px solid #eee;
+  cursor: pointer;
+  transition: background-color 0.2s;
+}
+
+/* Garantir que o conteúdo não transborde em células pequenas */
+.template-item > div {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.template-item:last-child {
+  border-bottom: none;
+}
+
+.template-item:hover {
+  background-color: #f5f5f5;
+}
+
+.template-item.selected {
+  background-color: #e3f2fd;
+}
+
+/* Botões de ação */
+.template-item .actions {
+  display: flex;
+  gap: 5px; /* Espaçamento entre os botões */
+}
+
+.template-item .actions button {
+  padding: 5px 10px;
+  background-color: #4a90e2;
+  color: white;
+  border: none;
+  border-radius: 3px;
+  cursor: pointer;
+  font-size: 0.85rem;
+  transition: background-color 0.2s;
+}
+
+.template-item .actions button:hover {
+  background-color: #357abD;
+}
+
+/* Botão de conversão com cor diferente */
+.template-item .actions button:nth-child(2) {
+  background-color: #6d4c95;
+}
+
+.template-item .actions button:nth-child(2):hover {
+  background-color: #543672;
+}
+
+/* Botão de exclusão com cor vermelha */
+.template-item .actions button.delete-btn {
+  background-color: #e04c41;
+}
+
+.template-item .actions button.delete-btn:hover {
+  background-color: #c13c31;
+}
+
+/* Detalhes do template */
+.template-details {
+  background-color: #fff;
+  border-radius: 8px;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+  padding: 1.5rem;
+  margin-top: 1rem;
+}
+
+.template-details h2 {
+  margin-bottom: 1rem;
+  color: #1976d2;
+}
+
+.template-details .info-grid {
+  display: grid;
+  grid-template-columns: 1fr 2fr;
+  gap: 0.75rem;
+  margin-bottom: 1.5rem;
+}
+
+.template-details .info-label {
+  font-weight: 500;
+  color: #555;
+}
+
+.template-details .description {
+  margin-top: 1.5rem;
+  padding-top: 1.5rem;
+  border-top: 1px solid #eee;
+}
+
+.template-details .description h3 {
+  margin-bottom: 0.75rem;
+  font-size: 1.1rem;
+  color: #333;
+}
+
+/* Resultados do GitHub */
+.github-results {
+  background-color: #fff;
+  border-radius: 8px;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+  overflow: hidden;
+}
+
+.github-item {
+  padding: 1.5rem;
+  border-bottom: 1px solid #eee;
+}
+
+.github-item:last-child {
+  border-bottom: none;
+}
+
+.github-item h3 {
+  margin-bottom: 0.5rem;
+  color: #1976d2;
+}
+
+.github-item p {
+  margin-bottom: 1rem;
+  color: #555;
+}
+
+.github-item .stars {
+  display: inline-block;
+  margin-right: 1rem;
+  color: #888;
+  font-size: 0.9rem;
+}
+
+.github-item .actions {
+  margin-top: 1rem;
+}
+
+.github-item .actions a, 
+.github-item .actions button {
+  display: inline-block;
+  margin-right: 0.75rem;
+  padding: 0.5rem 1rem;
+  background-color: #f0f0f0;
+  color: #333;
+  text-decoration: none;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: 0.9rem;
+}
+
+.github-item .actions a:hover, 
+.github-item .actions button:hover {
+  background-color: #e0e0e0;
+}
+
+.github-item .actions a.primary, 
+.github-item .actions button.primary {
+  background-color: #1976d2;
+  color: white;
+}
+
+.github-item .actions a.primary:hover, 
+.github-item .actions button.primary:hover {
+  background-color: #1565c0;
+}
+
+/* Estados de loading e erro */
+.loading {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  padding: 2rem;
+  color: #888;
+  font-style: italic;
+}
+
+.error-message {
+  padding: 1rem 1.5rem;
+  margin-bottom: 1.5rem;
+  background-color: #ffebee;
+  border-left: 4px solid #f44336;
+  color: #d32f2f;
+  border-radius: 4px;
+  font-size: 0.95rem;
+  line-height: 1.5;
+  position: relative;
+}
+
+.error-message::before {
+  content: "⚠️";
+  margin-right: 0.5rem;
+  font-size: 1.1rem;
+} 

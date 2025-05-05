@@ -1,0 +1,72 @@
+# Dependências
+/node_modules
+/.pnp
+.pnp.js
+
+# Arquivos de build
+/build
+/dist
+/.next
+/out
+
+# Dados locais
+.DS_Store
+.env.local
+.env.development.local
+.env.test.local
+.env.production.local
+*.sqlite
+*.sqlite3
+*.db
+
+# Logs
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+logs
+*.log
+
+# Arquivos temporários
+.tmp
+.temp
+
+# Editor
+.idea
+.vscode
+*.swp
+*.swo
+
+# Electron
+/electron-dist
+
+# Arquivos de ambiente
+.env
+.env.local
+.env.development.local
+.env.test.local
+.env.production.local
+
+# Logs
+logs
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# Arquivos do sistema operacional
+.DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+ehthumbs.db
+Thumbs.db
+
+# Banco de dados SQLite
+*.db
+*.sqlite
+*.sqlite3
+
+# Arquivos temporários
+tmp/
+temp/ 
