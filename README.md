@@ -1,18 +1,20 @@
 # Templix - Gerenciador de Templates Zabbix
 
-Templix é um aplicativo desktop para gerenciar, visualizar, buscar, importar e exportar templates do Zabbix.
+Templix é um aplicativo desktop para gerenciar, visualizar, buscar, importar e exportar templates do Zabbix. Desenvolvido com Electron e React, permite organizar e converter templates entre os formatos XML e YAML.
 
 ## Funcionalidades
 
 - **Gerenciamento de Templates Locais**
   - Importar arquivos de templates do Zabbix em formato XML e YAML
-  - Armazenar dados localmente (nome, versão, descrição, caminho do arquivo)
-  - Exportar templates para XML ou YAML
+  - Ordenar templates por nome, versão, formato ou origem
+  - Exportar templates para formatos XML ou YAML
+  - Converter templates entre formatos (XML ↔ YAML)
 
 - **Visualização e Filtragem**
   - Listar todos os templates com detalhes
   - Busca por nome ou versão
-  - Visualizar descrição/resumo
+  - Visualizar detalhes do template selecionado
+  - Atualizar a lista com um clique
 
 - **Integração com GitHub**
   - Buscar templates públicos no GitHub
@@ -22,8 +24,8 @@ Templix é um aplicativo desktop para gerenciar, visualizar, buscar, importar e 
 ## Tecnologias
 
 - **Interface Gráfica**: Electron + React
-- **Banco de Dados**: SQLite
-- **API GitHub**: Axios
+- **Banco de Dados**: SQLite para armazenamento local
+- **API GitHub**: Axios para comunicação
 - **Parsing XML**: xml2js
 - **Parsing YAML**: js-yaml
 
@@ -38,7 +40,7 @@ Templix suporta os seguintes formatos de templates Zabbix:
 
 1. Clone o repositório
    ```
-   git clone https://github.com/seu-usuario/templix.git
+   git clone https://github.com/rusthp/templix.git
    cd templix
    ```
 
@@ -51,6 +53,16 @@ Templix suporta os seguintes formatos de templates Zabbix:
    ```
    npm start
    ```
+
+## Desenvolvimento
+
+Para iniciar o ambiente de desenvolvimento:
+
+```
+npm start
+```
+
+Este comando inicia o servidor React e o aplicativo Electron simultaneamente.
 
 ## Build
 
@@ -66,10 +78,20 @@ Os arquivos de saída serão gerados na pasta `dist`.
 
 *[Capturas de tela serão adicionadas futuramente]*
 
+## Contribuição
+
+Contribuições são bem-vindas! Para contribuir:
+
+1. Faça um fork do projeto
+2. Crie uma branch para sua feature (`git checkout -b feature/nova-funcionalidade`)
+3. Commit suas mudanças (`git commit -m 'Adiciona nova funcionalidade'`)
+4. Push para a branch (`git push origin feature/nova-funcionalidade`)
+5. Abra um Pull Request
+
 ## Licença
 
 Este projeto está licenciado sob a licença ISC.
 
-## Contribuição
+## Autor
 
-Contribuições são bem-vindas! Sinta-se à vontade para abrir issues ou enviar pull requests. 
+- Desenvolvido por [rusthp](https://github.com/rusthp) 
