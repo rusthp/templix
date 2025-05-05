@@ -1,5 +1,28 @@
-import React, { useState } from 'react';
+import React, { useState, useMemo } from 'react';
 import './TemplateList.css'; // Vamos criar este arquivo para os estilos
+
+// Componente para o botão de atualização
+const RefreshButton = ({ onClick, isRefreshing }) => (
+  <button 
+    className={`refresh-button ${isRefreshing ? 'refreshing' : ''}`} 
+    onClick={onClick}
+    title="Atualizar lista de templates"
+  >
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24">
+      <path d="M17.65 6.35C16.2 4.9 14.21 4 12 4c-4.42 0-7.99 3.58-7.99 8s3.57 8 7.99 8c3.73 0 6.84-2.55 7.73-6h-2.08c-.82 2.33-3.04 4-5.65 4-3.31 0-6-2.69-6-6s2.69-6 6-6c1.66 0 3.14.69 4.22 1.78L13 11h7V4l-2.35 2.35z"/>
+    </svg>
+  </button>
+);
+
+// Componente para mensagem de lista vazia
+const EmptyListMessage = ({ onRefresh, isRefreshing }) => (
+  <div className="template-list-container">
+    <div className="template-list empty">
+      <p className="empty-message">Nenhum template encontrado. Importe um template para começar.</p>
+    </div>
+    <RefreshButton onClick={onRefresh} isRefreshing={isRefreshing} />
+  </div>
+);
 
 const TemplateList = ({ templates, onSelectTemplate, selectedTemplate, onExportTemplate, onConvertFormat, onDeleteTemplate, onRefresh }) => {
   // Estado para controlar a ordenação
@@ -22,26 +45,6 @@ const TemplateList = ({ templates, onSelectTemplate, selectedTemplate, onExportT
         });
     } else {
       setTimeout(() => setIsRefreshing(false), 1000);
-    }
-  };
-
-  if (templates.length === 0) {
-    return (
-      <div className="template-list-container">
-        <div className="template-list empty">
-          <p className="empty-message">Nenhum template encontrado. Importe um template para começar.</p>
-        </div>
-        <RefreshButton onClick={handleRefresh} isRefreshing={isRefreshing} />
-      </div>
-    );
-  }
-
-  // Função para alternar seleção (se clicar no mesmo template, ele será deselect)
-  const toggleTemplateSelection = (template) => {
-    if (selectedTemplate && selectedTemplate.id === template.id) {
-      onSelectTemplate(null);
-    } else {
-      onSelectTemplate(template);
     }
   };
 
@@ -79,6 +82,15 @@ const TemplateList = ({ templates, onSelectTemplate, selectedTemplate, onExportT
     return String(template.name);
   };
 
+  // Função para alternar seleção (se clicar no mesmo template, ele será deselect)
+  const toggleTemplateSelection = (template) => {
+    if (selectedTemplate && selectedTemplate.id === template.id) {
+      onSelectTemplate(null);
+    } else {
+      onSelectTemplate(template);
+    }
+  };
+
   // Função para lidar com a ordenação das colunas
   const requestSort = (key) => {
     let direction = 'ascending';
@@ -91,7 +103,7 @@ const TemplateList = ({ templates, onSelectTemplate, selectedTemplate, onExportT
   };
   
   // Ordenar os templates de acordo com a configuração atual
-  const sortedTemplates = React.useMemo(() => {
+  const sortedTemplates = useMemo(() => {
     let sortableItems = [...templates];
     
     if (sortConfig.key) {
@@ -149,6 +161,12 @@ const TemplateList = ({ templates, onSelectTemplate, selectedTemplate, onExportT
     return sortConfig.key === name ? `sort-${sortConfig.direction}` : '';
   };
   
+  // Se não há templates, renderizar a mensagem vazia
+  if (templates.length === 0) {
+    return <EmptyListMessage onRefresh={handleRefresh} isRefreshing={isRefreshing} />;
+  }
+  
+  // Renderizar a tabela com os templates
   return (
     <div className="template-list-container">
       <table className="template-list">
@@ -237,18 +255,5 @@ const TemplateList = ({ templates, onSelectTemplate, selectedTemplate, onExportT
     </div>
   );
 };
-
-// Componente para o botão de atualização
-const RefreshButton = ({ onClick, isRefreshing }) => (
-  <button 
-    className={`refresh-button ${isRefreshing ? 'refreshing' : ''}`} 
-    onClick={onClick}
-    title="Atualizar lista de templates"
-  >
-    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24">
-      <path d="M17.65 6.35C16.2 4.9 14.21 4 12 4c-4.42 0-7.99 3.58-7.99 8s3.57 8 7.99 8c3.73 0 6.84-2.55 7.73-6h-2.08c-.82 2.33-3.04 4-5.65 4-3.31 0-6-2.69-6-6s2.69-6 6-6c1.66 0 3.14.69 4.22 1.78L13 11h7V4l-2.35 2.35z"/>
-    </svg>
-  </button>
-);
 
 export default TemplateList; 

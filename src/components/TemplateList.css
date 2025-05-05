@@ -40,16 +40,23 @@
 }
 
 /* Indicadores de ordenação */
+.template-list th.sort-ascending::after,
+.template-list th.sort-descending::after {
+  display: inline-block;
+  margin-left: 8px;
+  font-size: 12px;
+  font-weight: bold;
+  position: relative;
+  top: -1px;
+  color: #1890ff;
+}
+
 .template-list th.sort-ascending::after {
   content: "▲";
-  margin-left: 8px;
-  font-size: 10px;
 }
 
 .template-list th.sort-descending::after {
   content: "▼";
-  margin-left: 8px;
-  font-size: 10px;
 }
 
 /* Cabeçalho de ações */
