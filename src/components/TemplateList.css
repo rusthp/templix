@@ -3,11 +3,14 @@
   width: 100%;
   padding: 15px;
   overflow: auto;
+  position: relative;
 }
 
 /* Estilo da tabela */
 .template-list {
   width: 100%;
+  display: table;
+  table-layout: fixed;
   border-collapse: collapse;
   border-radius: 8px;
   overflow: hidden;
@@ -17,24 +20,23 @@
 
 /* Cabeçalho */
 .template-list-header {
-  display: grid;
-  grid-template-columns: 2.5fr 1fr 1fr 1fr 2fr;
+  display: table-row;
   background-color: #f0f8ff;
-  border-bottom: 2px solid #ddd;
   font-weight: bold;
-  height: 50px;
 }
 
 .header-cell {
+  display: table-cell;
   padding: 12px 15px;
   text-align: center;
   cursor: pointer;
-  display: flex;
-  align-items: center;
-  justify-content: center;
   position: relative;
   transition: background-color 0.2s;
   border-right: 1px solid #ddd;
+  border-bottom: 2px solid #ddd;
+  vertical-align: middle;
+  height: 50px;
+  box-sizing: border-box;
 }
 
 .header-cell:last-child {
@@ -69,14 +71,14 @@
 
 /* Corpo da tabela */
 .template-list-body {
+  display: block;
   max-height: 500px;
   overflow-y: auto;
 }
 
 /* Linhas da tabela */
 .template-item {
-  display: grid;
-  grid-template-columns: 2.5fr 1fr 1fr 1fr 2fr;
+  display: table-row;
   border-bottom: 1px solid #eee;
   transition: background-color 0.2s;
   cursor: pointer;
@@ -93,13 +95,13 @@
 
 /* Células da tabela */
 .template-cell {
+  display: table-cell;
   padding: 12px 15px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
   text-align: center;
   border-right: 1px solid #eee;
+  vertical-align: middle;
   min-height: 50px;
+  box-sizing: border-box;
   word-break: break-word;
 }
 
@@ -107,19 +109,23 @@
   border-right: none;
 }
 
-/* Coluna de nome (alinhado à esquerda) */
+/* Define larguras específicas das colunas */
 .template-name {
-  justify-content: flex-start;
+  width: 30%;
   text-align: left;
-  font-weight: 500;
+}
+
+.template-version, .template-format, .template-source {
+  width: 15%;
+}
+
+.template-actions {
+  width: 25%;
 }
 
 /* Botões de ação */
 .template-cell.actions {
-  display: flex;
-  gap: 6px;
-  justify-content: center;
-  flex-wrap: wrap;
+  text-align: center;
 }
 
 .action-btn {
@@ -131,6 +137,7 @@
   transition: background-color 0.2s, transform 0.1s;
   white-space: nowrap;
   margin: 2px;
+  display: inline-block;
 }
 
 .action-btn:hover {
@@ -182,6 +189,7 @@
   align-items: center;
   justify-content: center;
   transition: transform 0.3s, background-color 0.3s;
+  z-index: 10;
 }
 
 .refresh-button:hover {

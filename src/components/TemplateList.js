@@ -171,30 +171,30 @@ const TemplateList = ({ templates, onSelectTemplate, selectedTemplate, onExportT
       <div className="template-list">
         <div className="template-list-header">
           <div 
-            className={`header-cell ${getClassNamesFor('name')}`} 
+            className={`header-cell template-name ${getClassNamesFor('name')}`} 
             onClick={() => requestSort('name')}
           >
             Nome
           </div>
           <div 
-            className={`header-cell ${getClassNamesFor('version')}`}
+            className={`header-cell template-version ${getClassNamesFor('version')}`}
             onClick={() => requestSort('version')}
           >
             Versão
           </div>
           <div 
-            className={`header-cell ${getClassNamesFor('format')}`}
+            className={`header-cell template-format ${getClassNamesFor('format')}`}
             onClick={() => requestSort('format')}
           >
             Formato
           </div>
           <div 
-            className={`header-cell ${getClassNamesFor('source')}`}
+            className={`header-cell template-source ${getClassNamesFor('source')}`}
             onClick={() => requestSort('source')}
           >
             Origem
           </div>
-          <div className="header-cell actions-header">Ações</div>
+          <div className="header-cell template-actions actions-header">Ações</div>
         </div>
         
         <div className="template-list-body">
@@ -208,7 +208,7 @@ const TemplateList = ({ templates, onSelectTemplate, selectedTemplate, onExportT
               <div className="template-cell template-version">{template.version || 'N/A'}</div>
               <div className="template-cell template-format">{(template.format || 'xml').toUpperCase()}</div>
               <div className="template-cell template-source">{template.source === 'local' ? 'Local' : 'GitHub'}</div>
-              <div className="template-cell actions">
+              <div className="template-cell template-actions actions">
                 <button 
                   className="action-btn export-btn"
                   onClick={(e) => {
