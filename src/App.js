@@ -5,6 +5,8 @@ import TemplateDetails from './components/TemplateDetails';
 import Sidebar from './components/Sidebar';
 import SearchGithub from './components/SearchGithub';
 import ThemeToggle from './components/ThemeToggle';
+import SettingsButton from './components/SettingsButton';
+import SettingsModal from './components/SettingsModal';
 import { ThemeContext } from './context/ThemeContext';
 import { getAllTemplates, importTemplate, exportTemplate, searchGithub, convertTemplateFormat, deleteTemplate } from './utils/electronAPI';
 
@@ -19,6 +21,7 @@ function App() {
   const [error, setError] = useState(null);
   const [searchQuery, setSearchQuery] = useState('');
   const [githubResults, setGithubResults] = useState([]);
+  const [isSettingsOpen, setIsSettingsOpen] = useState(false);
 
   // Carregar templates ao iniciar
   useEffect(() => {
@@ -178,6 +181,16 @@ function App() {
     }
   };
 
+  // Abrir modal de configurações
+  const handleOpenSettings = () => {
+    setIsSettingsOpen(true);
+  };
+
+  // Fechar modal de configurações
+  const handleCloseSettings = () => {
+    setIsSettingsOpen(false);
+  };
+
   // Filtrar templates locais com base na busca
   const filteredTemplates = templates.filter(template => 
     template.name.toLowerCase().includes(searchQuery.toLowerCase()) || 
@@ -191,7 +204,10 @@ function App() {
           <h1>Templix</h1>
           <p>Gerenciador de Templates Zabbix</p>
         </div>
-        <ThemeToggle />
+        <div className="header-actions">
+          <SettingsButton onClick={handleOpenSettings} />
+          <ThemeToggle />
+        </div>
       </header>
       
       <div className="app-content">
@@ -250,6 +266,11 @@ function App() {
           )}
         </main>
       </div>
+      
+      <SettingsModal 
+        isOpen={isSettingsOpen} 
+        onClose={handleCloseSettings} 
+      />
     </div>
   );
 }

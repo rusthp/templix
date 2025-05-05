@@ -71,4 +71,21 @@ export const deleteTemplate = (templateId) => {
  */
 export const importSelectedGithubFile = (fileApiUrl, fileName, originalRepoUrl) => {
   return ipcRenderer.invoke('import-selected-github-file', fileApiUrl, fileName, originalRepoUrl);
+};
+
+/**
+ * Salva o token de acesso pessoal do GitHub para uso nas requisições
+ * @param {string} token - Token de acesso pessoal do GitHub
+ * @returns {Promise<Object>} Resultado da operação
+ */
+export const saveGithubToken = (token) => {
+  return ipcRenderer.invoke('save-github-token', token);
+};
+
+/**
+ * Obtém o token de acesso pessoal do GitHub salvo
+ * @returns {Promise<Object>} Objeto contendo o token se existir
+ */
+export const getGithubToken = () => {
+  return ipcRenderer.invoke('get-github-token');
 }; 

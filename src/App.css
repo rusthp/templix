@@ -86,13 +86,13 @@ body {
 }
 
 .app-header {
-  background-color: var(--header-bg);
-  color: var(--header-text);
+  background-color: var(--primary-color, #2196f3);
+  color: white;
   padding: 1rem 2rem;
-  box-shadow: 0 2px 4px var(--box-shadow);
   display: flex;
   justify-content: space-between;
   align-items: center;
+  border-bottom: 1px solid var(--border-color, #eee);
 }
 
 .header-content {
@@ -100,14 +100,21 @@ body {
   flex-direction: column;
 }
 
-.app-header h1 {
+.header-content h1 {
+  margin: 0;
   font-size: 1.8rem;
-  margin-bottom: 0.25rem;
 }
 
-.app-header p {
+.header-content p {
+  margin: 0;
   font-size: 0.9rem;
-  opacity: 0.9;
+  opacity: 0.8;
+}
+
+.header-actions {
+  display: flex;
+  align-items: center;
+  gap: 8px;
 }
 
 .app-content {

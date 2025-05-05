@@ -60,6 +60,19 @@ function initializeDatabase() {
               console.log('Coluna "format" já existe na tabela templates.');
             }
           });
+          
+          // Criar tabela de configurações se não existir
+          db.run(`CREATE TABLE IF NOT EXISTS settings (
+            key TEXT PRIMARY KEY,
+            value TEXT,
+            date_updated DATETIME DEFAULT CURRENT_TIMESTAMP
+          )`, (err) => {
+            if (err) {
+              console.error('Erro ao criar tabela de configurações:', err.message);
+            } else {
+              console.log('Tabela de configurações está pronta.');
+            }
+          });
         }
       });
     }
@@ -512,14 +525,32 @@ app.whenReady().then(() => {
       const owner = urlParts[1];
       const repo = urlParts[2].replace(/\.git$/, '');
       
-      // Configurar autenticação para API GitHub
-      // NOTA: Este é um token temporário apenas para testes
-      // Em ambiente de produção, use variáveis de ambiente ou um sistema de armazenamento seguro
+      // Buscar token salvo do banco de dados
       const headers = { 'Accept': 'application/vnd.github.v3+json' };
-      const TEMP_TOKEN = 'ghp_HMhFQ7aLdkgcpvJ7YSN0R3fpQRRBbf2FnHVZ';
+      let githubToken = null;
       
-      if (TEMP_TOKEN) {
-        headers['Authorization'] = `token ${TEMP_TOKEN}`;
+      try {
+        const tokenResult = await new Promise((resolve, reject) => {
+          db.get('SELECT value FROM settings WHERE key = ?', ['github_token'], (err, row) => {
+            if (err) {
+              reject(err);
+            } else {
+              resolve(row);
+            }
+          });
+        });
+        
+        if (tokenResult && tokenResult.value) {
+          githubToken = tokenResult.value;
+          console.log('Token do GitHub encontrado nas configurações');
+        }
+      } catch (tokenError) {
+        console.warn('Erro ao buscar token do GitHub:', tokenError.message);
+      }
+      
+      // Usar token se disponível
+      if (githubToken) {
+        headers['Authorization'] = `token ${githubToken}`;
         console.log('Usando token para autenticação GitHub');
       } else {
         console.warn('Nenhum token GitHub configurado - limite de requisições será baixo');
@@ -722,9 +753,30 @@ app.whenReady().then(() => {
   ipcMain.handle('import-selected-github-file', async (event, fileApiUrl, fileName, originalRepoUrl) => {
     console.log(`Iniciando importação do arquivo selecionado: ${fileName}`);
     try {
+      // Buscar token salvo do banco de dados
       const headers = { 'Accept': 'application/vnd.github.v3+json' };
-      const githubToken = process.env.GITHUB_TOKEN;
+      let githubToken = null;
       
+      try {
+        const tokenResult = await new Promise((resolve, reject) => {
+          db.get('SELECT value FROM settings WHERE key = ?', ['github_token'], (err, row) => {
+            if (err) {
+              reject(err);
+            } else {
+              resolve(row);
+            }
+          });
+        });
+        
+        if (tokenResult && tokenResult.value) {
+          githubToken = tokenResult.value;
+          console.log('Token do GitHub encontrado nas configurações');
+        }
+      } catch (tokenError) {
+        console.warn('Erro ao buscar token do GitHub:', tokenError.message);
+      }
+      
+      // Usar token se disponível
       if (githubToken) {
         headers['Authorization'] = `token ${githubToken}`;
       }
@@ -1177,6 +1229,67 @@ app.whenReady().then(() => {
         error: 'Erro ao excluir template', 
         message: error.message
       };
+    }
+  });
+
+  // Salvar token do GitHub
+  ipcMain.handle('save-github-token', async (event, token) => {
+    try {
+      const result = await new Promise((resolve, reject) => {
+        if (token) {
+          // Token fornecido, salvar ou atualizar
+          db.run(
+            'INSERT OR REPLACE INTO settings (key, value, date_updated) VALUES (?, ?, datetime("now"))', 
+            ['github_token', token],
+            function(err) {
+              if (err) {
+                console.error('Erro ao salvar token do GitHub:', err.message);
+                reject(err);
+              } else {
+                console.log('Token do GitHub salvo com sucesso');
+                resolve({ success: true });
+              }
+            }
+          );
+        } else {
+          // Token vazio, remover se existir
+          db.run('DELETE FROM settings WHERE key = ?', ['github_token'], function(err) {
+            if (err) {
+              console.error('Erro ao remover token do GitHub:', err.message);
+              reject(err);
+            } else {
+              console.log('Token do GitHub removido com sucesso');
+              resolve({ success: true });
+            }
+          });
+        }
+      });
+      
+      return result;
+    } catch (error) {
+      console.error('Erro ao processar token do GitHub:', error);
+      return { error: 'Falha ao salvar configurações', message: error.message };
+    }
+  });
+  
+  // Obter token do GitHub
+  ipcMain.handle('get-github-token', async () => {
+    try {
+      const result = await new Promise((resolve, reject) => {
+        db.get('SELECT value FROM settings WHERE key = ?', ['github_token'], (err, row) => {
+          if (err) {
+            console.error('Erro ao buscar token do GitHub:', err.message);
+            reject(err);
+          } else {
+            resolve(row);
+          }
+        });
+      });
+      
+      return result ? { token: result.value } : { token: '' };
+    } catch (error) {
+      console.error('Erro ao obter token do GitHub:', error);
+      return { error: 'Falha ao buscar configurações', message: error.message };
     }
   });
 });
