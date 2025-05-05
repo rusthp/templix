@@ -365,6 +365,11 @@ body {
   margin-bottom: 1.5rem;
 }
 
+.template-details .info-grid div {
+  color: var(--text-color);
+  transition: color 0.3s ease;
+}
+
 .template-details .info-label {
   font-weight: 500;
   color: var(--text-color);
@@ -383,6 +388,12 @@ body {
   margin-bottom: 0.5rem;
   font-size: 1rem;
   color: var(--text-color);
+  transition: color 0.3s ease;
+}
+
+.template-details .description p {
+  color: var(--text-color);
+  line-height: 1.5;
   transition: color 0.3s ease;
 }
 
