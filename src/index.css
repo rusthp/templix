@@ -1,3 +1,16 @@
+/* Sistema de temas globais */
+html {
+  transition: color-scheme 0.3s ease;
+}
+
+html[data-theme='light'] {
+  color-scheme: light;
+}
+
+html[data-theme='dark'] {
+  color-scheme: dark;
+}
+
 body {
   margin: 0;
   padding: 0;
@@ -27,4 +40,36 @@ code {
   --border-color: #e0e0e0;
   --error-color: #f44336;
   --success-color: #4caf50;
+}
+
+/* Tema para scrollbars personalizados no modo escuro */
+@media (prefers-color-scheme: dark) {
+  ::-webkit-scrollbar {
+    width: 12px;
+  }
+  
+  ::-webkit-scrollbar-track {
+    background: #333;
+  }
+  
+  ::-webkit-scrollbar-thumb {
+    background-color: #666;
+    border-radius: 6px;
+    border: 3px solid #333;
+  }
+}
+
+/* Scrollbars personalizados no tema escuro */
+html[data-theme='dark'] ::-webkit-scrollbar {
+  width: 12px;
+}
+
+html[data-theme='dark'] ::-webkit-scrollbar-track {
+  background: #333;
+}
+
+html[data-theme='dark'] ::-webkit-scrollbar-thumb {
+  background-color: #666;
+  border-radius: 6px;
+  border: 3px solid #333;
 } 

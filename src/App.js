@@ -1,14 +1,17 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useContext } from 'react';
 import './App.css';
 import TemplateList from './components/TemplateList';
 import TemplateDetails from './components/TemplateDetails';
 import Sidebar from './components/Sidebar';
 import SearchGithub from './components/SearchGithub';
+import ThemeToggle from './components/ThemeToggle';
+import { ThemeContext } from './context/ThemeContext';
 import { getAllTemplates, importTemplate, exportTemplate, searchGithub, convertTemplateFormat, deleteTemplate } from './utils/electronAPI';
 
 const { ipcRenderer } = window.require('electron');
 
 function App() {
+  const { theme } = useContext(ThemeContext);
   const [templates, setTemplates] = useState([]);
   const [selectedTemplate, setSelectedTemplate] = useState(null);
   const [activeTab, setActiveTab] = useState('local'); // 'local' ou 'github'
@@ -166,10 +169,13 @@ function App() {
   );
 
   return (
-    <div className="app">
+    <div className={`app ${theme}`}>
       <header className="app-header">
-        <h1>Templix</h1>
-        <p>Gerenciador de Templates Zabbix</p>
+        <div className="header-content">
+          <h1>Templix</h1>
+          <p>Gerenciador de Templates Zabbix</p>
+        </div>
+        <ThemeToggle />
       </header>
       
       <div className="app-content">

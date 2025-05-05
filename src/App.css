@@ -1,3 +1,49 @@
+/* Variáveis de cores para o tema claro (padrão) */
+:root {
+  --bg-color: #f5f5f5;
+  --text-color: #333;
+  --header-bg: #1976d2;
+  --header-text: white;
+  --sidebar-bg: #fff;
+  --sidebar-border: #e0e0e0;
+  --sidebar-item-hover: #f0f0f0;
+  --sidebar-item-active-bg: #e3f2fd;
+  --sidebar-item-active-color: #1976d2;
+  --search-border: #ddd;
+  --button-bg: #1976d2;
+  --button-hover: #1565c0;
+  --item-border: #eee;
+  --item-hover: #f5f5f5;
+  --item-selected: #e3f2fd;
+  --list-header-bg: #f7f7f7;
+  --box-shadow: rgba(0, 0, 0, 0.1);
+  --error-bg: #f8d7da;
+  --error-text: #721c24;
+}
+
+/* Variáveis de cores para o tema escuro */
+[data-theme='dark'] {
+  --bg-color: #222;
+  --text-color: #eee;
+  --header-bg: #0d47a1;
+  --header-text: #fff;
+  --sidebar-bg: #333;
+  --sidebar-border: #444;
+  --sidebar-item-hover: #444;
+  --sidebar-item-active-bg: #0d47a1;
+  --sidebar-item-active-color: white;
+  --search-border: #444;
+  --button-bg: #0d47a1;
+  --button-hover: #0a3780;
+  --item-border: #444;
+  --item-hover: #333;
+  --item-selected: #0d47a1;
+  --list-header-bg: #333;
+  --box-shadow: rgba(0, 0, 0, 0.3);
+  --error-bg: #d32f2f;
+  --error-text: #fff;
+}
+
 /* Estilos globais */
 * {
   box-sizing: border-box;
@@ -7,8 +53,9 @@
 
 body {
   font-family: 'Segoe UI', 'Roboto', 'Oxygen', 'Ubuntu', 'Cantarell', sans-serif;
-  background-color: #f5f5f5;
-  color: #333;
+  background-color: var(--bg-color);
+  color: var(--text-color);
+  transition: background-color 0.3s ease, color 0.3s ease;
 }
 
 /* Layout principal */
@@ -19,10 +66,18 @@ body {
 }
 
 .app-header {
-  background-color: #1976d2;
-  color: white;
+  background-color: var(--header-bg);
+  color: var(--header-text);
   padding: 1rem 2rem;
-  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  box-shadow: 0 2px 4px var(--box-shadow);
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.header-content {
+  display: flex;
+  flex-direction: column;
 }
 
 .app-header h1 {
@@ -44,11 +99,12 @@ body {
 /* Sidebar */
 .sidebar {
   width: 240px;
-  background-color: #fff;
-  border-right: 1px solid #e0e0e0;
+  background-color: var(--sidebar-bg);
+  border-right: 1px solid var(--sidebar-border);
   display: flex;
   flex-direction: column;
   padding: 1rem 0;
+  transition: background-color 0.3s ease, border-color 0.3s ease;
 }
 
 .sidebar-nav {
@@ -64,19 +120,19 @@ body {
   border: none;
   cursor: pointer;
   font-size: 1rem;
-  color: #555;
-  transition: background-color 0.2s;
+  color: var(--text-color);
+  transition: background-color 0.2s, color 0.2s;
 }
 
 .sidebar-nav button:hover {
-  background-color: #f0f0f0;
+  background-color: var(--sidebar-item-hover);
 }
 
 .sidebar-nav button.active {
-  background-color: #e3f2fd;
-  color: #1976d2;
+  background-color: var(--sidebar-item-active-bg);
+  color: var(--sidebar-item-active-color);
   font-weight: 500;
-  border-left: 3px solid #1976d2;
+  border-left: 3px solid var(--sidebar-item-active-color);
 }
 
 .sidebar-actions {
@@ -86,7 +142,7 @@ body {
 .sidebar-actions button {
   width: 100%;
   padding: 0.75rem;
-  background-color: #1976d2;
+  background-color: var(--button-bg);
   color: white;
   border: none;
   border-radius: 4px;
@@ -97,7 +153,7 @@ body {
 }
 
 .sidebar-actions button:hover {
-  background-color: #1565c0;
+  background-color: var(--button-hover);
 }
 
 /* Conteúdo principal */
@@ -108,6 +164,8 @@ body {
   display: flex;
   flex-direction: column;
   height: calc(100vh - 64px); /* Altura da janela menos a altura do cabeçalho */
+  background-color: var(--bg-color);
+  transition: background-color 0.3s ease;
 }
 
 /* Container para lista de templates e detalhes */
@@ -131,45 +189,54 @@ body {
   position: sticky;
   top: 0;
   z-index: 10;
-  background-color: #f5f5f5;
+  background-color: var(--bg-color);
   padding: 10px 0;
+  transition: background-color 0.3s ease;
 }
 
 .search-bar input {
   flex: 1;
   padding: 0.75rem;
-  border: 1px solid #ddd;
+  border: 1px solid var(--search-border);
   border-radius: 4px;
   font-size: 1rem;
   outline: none;
-  background-color: white;
+  background-color: var(--sidebar-bg);
+  color: var(--text-color);
+  transition: border-color 0.3s ease, background-color 0.3s ease, color 0.3s ease;
 }
 
 .search-bar input:focus {
-  border-color: #1976d2;
+  border-color: var(--button-bg);
   box-shadow: 0 0 0 2px rgba(25, 118, 210, 0.1);
 }
 
 .search-bar button {
   margin-left: 0.5rem;
   padding: 0 1rem;
-  background-color: #1976d2;
+  background-color: var(--button-bg);
   color: white;
   border: none;
   border-radius: 4px;
   cursor: pointer;
   font-weight: 500;
   white-space: nowrap;
+  transition: background-color 0.2s;
+}
+
+.search-bar button:hover {
+  background-color: var(--button-hover);
 }
 
 /* Lista de templates */
 .template-list {
-  background-color: #fff;
+  background-color: var(--sidebar-bg);
   border-radius: 8px;
-  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+  box-shadow: 0 1px 3px var(--box-shadow);
   overflow-y: auto;
   margin-bottom: 1.5rem;
   max-height: calc(100vh - 180px); /* Limitar altura para permitir rolagem em telas pequenas */
+  transition: background-color 0.3s ease, box-shadow 0.3s ease;
 }
 
 .template-list-header {
@@ -177,20 +244,21 @@ body {
   grid-template-columns: 2fr 1fr 1fr 1fr auto;
   padding: 1rem;
   font-weight: 500;
-  background-color: #f7f7f7;
-  border-bottom: 1px solid #eee;
+  background-color: var(--list-header-bg);
+  border-bottom: 1px solid var(--item-border);
   position: sticky;
   top: 0;
   z-index: 1;
+  transition: background-color 0.3s ease, border-color 0.3s ease;
 }
 
 .template-item {
   display: grid;
   grid-template-columns: 2fr 1fr 1fr 1fr auto;
   padding: 1rem;
-  border-bottom: 1px solid #eee;
+  border-bottom: 1px solid var(--item-border);
   cursor: pointer;
-  transition: background-color 0.2s;
+  transition: background-color 0.2s, border-color 0.3s ease;
 }
 
 /* Garantir que o conteúdo não transborde em células pequenas */
@@ -205,11 +273,11 @@ body {
 }
 
 .template-item:hover {
-  background-color: #f5f5f5;
+  background-color: var(--item-hover);
 }
 
 .template-item.selected {
-  background-color: #e3f2fd;
+  background-color: var(--item-selected);
 }
 
 /* Botões de ação */
@@ -248,58 +316,89 @@ body {
 }
 
 .template-item .actions button.delete-btn:hover {
-  background-color: #c13c31;
+  background-color: #c73e35;
+}
+
+/* Botão de atualização */
+.refresh-button {
+  margin-left: auto;
+  padding: 0.5rem;
+  background-color: var(--button-bg);
+  color: white;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: 0.9rem;
+  display: flex;
+  align-items: center;
+  transition: background-color 0.2s;
+}
+
+.refresh-button:hover {
+  background-color: var(--button-hover);
+}
+
+.refresh-button svg {
+  margin-right: 5px;
 }
 
 /* Detalhes do template */
 .template-details {
-  background-color: #fff;
+  background-color: var(--sidebar-bg);
   border-radius: 8px;
-  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+  box-shadow: 0 1px 3px var(--box-shadow);
   padding: 1.5rem;
-  margin-top: 1rem;
+  margin-top: 1.5rem;
+  transition: background-color 0.3s ease, box-shadow 0.3s ease;
 }
 
 .template-details h2 {
   margin-bottom: 1rem;
-  color: #1976d2;
+  color: var(--text-color);
+  transition: color 0.3s ease;
 }
 
 .template-details .info-grid {
   display: grid;
-  grid-template-columns: 1fr 2fr;
-  gap: 0.75rem;
+  grid-template-columns: 1fr 1fr;
+  gap: 1rem;
   margin-bottom: 1.5rem;
 }
 
 .template-details .info-label {
   font-weight: 500;
-  color: #555;
+  color: var(--text-color);
+  transition: color 0.3s ease;
 }
 
 .template-details .description {
-  margin-top: 1.5rem;
-  padding-top: 1.5rem;
-  border-top: 1px solid #eee;
+  background-color: var(--bg-color);
+  border-radius: 4px;
+  padding: 1rem;
+  margin-top: 1rem;
+  transition: background-color 0.3s ease;
 }
 
 .template-details .description h3 {
-  margin-bottom: 0.75rem;
-  font-size: 1.1rem;
-  color: #333;
+  margin-bottom: 0.5rem;
+  font-size: 1rem;
+  color: var(--text-color);
+  transition: color 0.3s ease;
 }
 
 /* Resultados do GitHub */
 .github-results {
-  background-color: #fff;
+  background-color: var(--sidebar-bg);
   border-radius: 8px;
-  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
-  overflow: hidden;
+  box-shadow: 0 1px 3px var(--box-shadow);
+  padding: 1rem;
+  transition: background-color 0.3s ease, box-shadow 0.3s ease;
 }
 
 .github-item {
-  padding: 1.5rem;
-  border-bottom: 1px solid #eee;
+  padding: 1rem;
+  border-bottom: 1px solid var(--item-border);
+  transition: border-color 0.3s ease;
 }
 
 .github-item:last-child {
@@ -308,79 +407,90 @@ body {
 
 .github-item h3 {
   margin-bottom: 0.5rem;
-  color: #1976d2;
+  color: var(--text-color);
+  transition: color 0.3s ease;
 }
 
 .github-item p {
   margin-bottom: 1rem;
-  color: #555;
+  color: var(--text-color);
+  opacity: 0.8;
+  transition: color 0.3s ease;
 }
 
 .github-item .stars {
   display: inline-block;
-  margin-right: 1rem;
-  color: #888;
-  font-size: 0.9rem;
+  padding: 0.25rem 0.5rem;
+  background-color: var(--button-bg);
+  color: white;
+  border-radius: 4px;
+  font-size: 0.85rem;
+  margin-bottom: 1rem;
+  transition: background-color 0.3s ease;
 }
 
 .github-item .actions {
-  margin-top: 1rem;
+  display: flex;
+  gap: 10px;
 }
 
 .github-item .actions a, 
 .github-item .actions button {
-  display: inline-block;
-  margin-right: 0.75rem;
   padding: 0.5rem 1rem;
-  background-color: #f0f0f0;
-  color: #333;
-  text-decoration: none;
-  border: none;
   border-radius: 4px;
-  cursor: pointer;
+  text-decoration: none;
   font-size: 0.9rem;
+  font-weight: 500;
+  cursor: pointer;
+  display: inline-block;
+  text-align: center;
+  transition: background-color 0.2s;
 }
 
 .github-item .actions a:hover, 
 .github-item .actions button:hover {
-  background-color: #e0e0e0;
+  opacity: 0.9;
 }
 
 .github-item .actions a.primary, 
 .github-item .actions button.primary {
-  background-color: #1976d2;
+  background-color: var(--button-bg);
   color: white;
+  border: none;
 }
 
 .github-item .actions a.primary:hover, 
 .github-item .actions button.primary:hover {
-  background-color: #1565c0;
+  background-color: var(--button-hover);
 }
 
-/* Estados de loading e erro */
+/* Estados de carregamento e erro */
 .loading {
   display: flex;
   justify-content: center;
   align-items: center;
-  padding: 2rem;
-  color: #888;
-  font-style: italic;
+  height: 200px;
+  font-size: 1.1rem;
+  color: var(--text-color);
+  opacity: 0.7;
+  transition: color 0.3s ease;
 }
 
 .error-message {
-  padding: 1rem 1.5rem;
-  margin-bottom: 1.5rem;
-  background-color: #ffebee;
-  border-left: 4px solid #f44336;
-  color: #d32f2f;
+  background-color: var(--error-bg);
+  color: var(--error-text);
+  padding: 1rem;
   border-radius: 4px;
-  font-size: 0.95rem;
-  line-height: 1.5;
+  margin-bottom: 1.5rem;
   position: relative;
+  padding-left: 2.5rem;
+  transition: background-color 0.3s ease, color 0.3s ease;
 }
 
 .error-message::before {
   content: "⚠️";
-  margin-right: 0.5rem;
-  font-size: 1.1rem;
+  position: absolute;
+  left: 1rem;
+  top: 50%;
+  transform: translateY(-50%);
 } 
