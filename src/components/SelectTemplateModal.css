@@ -1,0 +1,141 @@
+/* Overlay do modal */
+.modal-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: rgba(0, 0, 0, 0.6);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1100; /* Acima do z-index do theme-toggle */
+  backdrop-filter: blur(3px);
+}
+
+/* Conteúdo do modal */
+.modal-content {
+  background-color: var(--sidebar-bg, #fff); /* Usa variável de tema, fallback branco */
+  padding: 25px 30px;
+  border-radius: 8px;
+  box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
+  width: 90%;
+  max-width: 600px;
+  max-height: 80vh;
+  display: flex;
+  flex-direction: column;
+  color: var(--text-color, #333); /* Usa variável de tema */
+}
+
+.modal-content h2 {
+  margin-top: 0;
+  margin-bottom: 15px;
+  color: var(--text-color, #333);
+  border-bottom: 1px solid var(--border-color, #eee);
+  padding-bottom: 10px;
+}
+
+.modal-content p {
+  margin-bottom: 20px;
+  line-height: 1.5;
+  color: var(--light-text, #555);
+}
+
+/* Lista de arquivos */
+.file-list {
+  list-style: none;
+  padding: 0;
+  margin: 0 0 20px 0;
+  overflow-y: auto; /* Adiciona scroll se a lista for longa */
+  max-height: calc(80vh - 200px); /* Ajustar altura máxima */
+  border: 1px solid var(--border-color, #eee);
+  border-radius: 4px;
+}
+
+.file-list li {
+  padding: 12px 15px;
+  cursor: pointer;
+  transition: background-color 0.2s ease;
+  border-bottom: 1px solid var(--border-color, #eee);
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.file-list li:last-child {
+  border-bottom: none;
+}
+
+.file-list li:hover {
+  background-color: var(--sidebar-item-hover, #f0f0f0); /* Usa variável de tema */
+}
+
+.file-list .file-path {
+  font-weight: 500;
+  word-break: break-all; /* Quebra caminhos longos */
+  margin-right: 10px;
+}
+
+.file-list .file-format {
+  font-size: 0.85em;
+  color: var(--light-text, #777);
+  white-space: nowrap;
+}
+
+/* Botão de fechar/cancelar */
+.close-button {
+  padding: 10px 20px;
+  background-color: #ccc;
+  color: #333;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: 0.9rem;
+  font-weight: 500;
+  align-self: flex-end; /* Alinha à direita */
+  transition: background-color 0.2s;
+}
+
+.close-button:hover {
+  background-color: #bbb;
+}
+
+/* Ajustes para tema escuro no modal */
+[data-theme='dark'] .modal-content {
+  background-color: #333;
+  color: #eee;
+}
+
+[data-theme='dark'] .modal-content h2 {
+  color: #eee;
+  border-bottom-color: #444;
+}
+
+[data-theme='dark'] .modal-content p {
+  color: #ccc;
+}
+
+[data-theme='dark'] .file-list {
+  border-color: #444;
+}
+
+[data-theme='dark'] .file-list li {
+  border-bottom-color: #444;
+}
+
+[data-theme='dark'] .file-list li:hover {
+  background-color: #444;
+}
+
+[data-theme='dark'] .file-list .file-format {
+  color: #aaa;
+}
+
+[data-theme='dark'] .close-button {
+  background-color: #555;
+  color: #eee;
+}
+
+[data-theme='dark'] .close-button:hover {
+  background-color: #666;
+} 

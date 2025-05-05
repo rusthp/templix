@@ -74,9 +74,6 @@ npm run build
 
 Os arquivos de saída serão gerados na pasta `dist`.
 
-## Capturas de Tela
-
-*[Capturas de tela serão adicionadas futuramente]*
 
 ## Contribuição
 

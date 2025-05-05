@@ -9,26 +9,29 @@
 .template-list {
   width: 100%;
   border-collapse: collapse;
-  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
-  background-color: #fff;
+  box-shadow: 0 2px 10px var(--box-shadow);
+  background-color: var(--sidebar-bg);
   border-radius: 8px;
   overflow: hidden;
+  color: var(--text-color);
 }
 
 /* Cabeçalho da tabela */
 .template-list thead {
-  background-color: #f0f8ff;
+  background-color: var(--list-header-bg);
 }
 
 .template-list th {
   padding: 12px 15px;
   text-align: center;
   font-weight: bold;
-  border-bottom: 2px solid #ddd;
-  border-right: 1px solid #ddd;
+  border-bottom: 2px solid var(--sidebar-border);
+  border-right: 1px solid var(--sidebar-border);
   cursor: pointer;
   position: relative;
   height: 50px;
+  color: var(--text-color);
+  transition: background-color 0.3s, color 0.3s;
 }
 
 .template-list th:last-child {
@@ -36,7 +39,7 @@
 }
 
 .template-list th:hover {
-  background-color: #e6f2ff;
+  background-color: var(--sidebar-item-hover);
 }
 
 /* Indicadores de ordenação */
@@ -48,7 +51,7 @@
   font-weight: bold;
   position: relative;
   top: -1px;
-  color: #1890ff;
+  color: var(--button-bg);
 }
 
 .template-list th.sort-ascending::after {
@@ -65,7 +68,7 @@
 }
 
 .template-list th.actions-header:hover {
-  background-color: #f0f8ff;
+  background-color: var(--list-header-bg);
 }
 
 /* Corpo da tabela */
@@ -76,28 +79,40 @@
 
 /* Linhas da tabela */
 .template-list tr {
-  border-bottom: 1px solid #eee;
-  transition: background-color 0.2s;
+  border-bottom: 1px solid var(--item-border);
+  transition: background-color 0.2s, color 0.2s;
   cursor: pointer;
 }
 
 .template-list tbody tr:hover {
-  background-color: #f9f9f9;
+  background-color: var(--item-hover);
 }
 
 .template-list tr.selected {
-  background-color: #e6f7ff;
-  border-left: 4px solid #1890ff;
+  background-color: var(--item-selected) !important;
+  border-left: 4px solid var(--button-bg);
+  color: var(--button-text);
+}
+
+[data-theme='dark'] .template-list tr.selected {
+  background-color: var(--button-bg) !important;
+  color: #fff;
+}
+
+/* Corpo da tabela com cores explícitas para modo escuro */
+[data-theme='dark'] .template-list tbody td {
+  color: var(--text-color);
 }
 
 /* Células da tabela */
 .template-list td {
   padding: 12px 15px;
   text-align: center;
-  border-right: 1px solid #eee;
+  border-right: 1px solid var(--item-border);
   height: 50px;
   box-sizing: border-box;
   word-break: break-word;
+  color: var(--text-color);
 }
 
 .template-list td:last-child {
@@ -134,8 +149,9 @@
   border-radius: 4px;
   cursor: pointer;
   font-size: 12px;
-  transition: background-color 0.2s, transform 0.1s;
+  transition: background-color 0.2s, transform 0.1s, color 0.3s;
   display: inline-block;
+  color: white;
 }
 
 .template-list .action-btn:hover {
@@ -145,30 +161,30 @@
 
 /* Estilos específicos por tipo de botão */
 .export-btn {
-  background-color: #1890ff;
-  color: white;
+  background-color: var(--export-btn-bg);
+  color: var(--button-text);
 }
 
 .export-btn:hover {
-  background-color: #0c7ddd;
+  background-color: var(--export-btn-hover);
 }
 
 .convert-btn {
-  background-color: #673ab7;
-  color: white;
+  background-color: var(--convert-btn-bg);
+  color: var(--button-text);
 }
 
 .convert-btn:hover {
-  background-color: #5e35b1;
+  background-color: var(--convert-btn-hover);
 }
 
 .delete-btn {
-  background-color: #f44336;
-  color: white;
+  background-color: var(--delete-btn-bg);
+  color: var(--button-text);
 }
 
 .delete-btn:hover {
-  background-color: #e53935;
+  background-color: var(--delete-btn-hover);
 }
 
 /* Refresh button */
@@ -179,9 +195,9 @@
   width: 40px;
   height: 40px;
   border-radius: 50%;
-  background-color: #1890ff;
+  background-color: var(--button-bg);
   border: none;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
+  box-shadow: 0 2px 8px var(--box-shadow);
   cursor: pointer;
   display: flex;
   align-items: center;
@@ -191,7 +207,7 @@
 }
 
 .refresh-button:hover {
-  background-color: #0c7ddd;
+  background-color: var(--button-hover);
   transform: rotate(30deg);
 }
 
@@ -220,13 +236,38 @@
   justify-content: center;
   align-items: center;
   height: 200px;
-  border: 1px dashed #ccc;
+  border: 1px dashed var(--sidebar-border);
   border-radius: 8px;
-  background-color: #f9f9f9;
+  background-color: var(--sidebar-bg);
 }
 
 .empty-message {
-  color: #888;
+  color: var(--text-color);
+  opacity: 0.7;
   font-size: 16px;
   text-align: center;
+}
+
+/* Estilo específico para o tema escuro */
+[data-theme='dark'] .template-list {
+  background-color: #2a2a2a;
+  color: white;
+}
+
+[data-theme='dark'] .template-list th {
+  background-color: #1e1e1e;
+  color: white;
+}
+
+[data-theme='dark'] .template-list td {
+  color: white;
+}
+
+[data-theme='dark'] .template-list tr.selected td {
+  background-color: var(--button-bg);
+  color: white;
+}
+
+[data-theme='dark'] .template-list tr:hover {
+  background-color: #333;
 } 

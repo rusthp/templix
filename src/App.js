@@ -157,9 +157,25 @@ function App() {
 
   // Callback para quando um template é importado do GitHub
   const handleGithubImport = async () => {
-    // Recarrega os templates e mostra a aba local
-    await loadTemplates();
-    setActiveTab('local');
+    try {
+      setLoading(true);
+      setError(null);
+      
+      // A importação foi bem-sucedida (notificada pelo SearchGithub)
+      // Apenas recarrega os templates e muda para a aba local
+      console.log('handleGithubImport chamado. Recarregando templates...');
+      await loadTemplates();
+      setActiveTab('local');
+      
+      // Limpar qualquer mensagem de erro/sucesso anterior
+      setError(null); 
+
+    } catch (err) {
+      console.error('Erro ao recarregar templates após importação do GitHub:', err);
+      setError('Falha ao atualizar a lista após importação do GitHub.');
+    } finally {
+      setLoading(false);
+    }
   };
 
   // Filtrar templates locais com base na busca
@@ -183,6 +199,7 @@ function App() {
           activeTab={activeTab} 
           setActiveTab={setActiveTab}
           onImportTemplate={handleImportTemplate}
+          onRefresh={loadTemplates}
         />
         
         <main className="main-content">
@@ -218,7 +235,6 @@ function App() {
                     onExportTemplate={handleExportTemplate}
                     onConvertFormat={handleConvertFormat}
                     onDeleteTemplate={handleDeleteTemplate}
-                    onRefresh={loadTemplates}
                   />
                   {selectedTemplate && (
                     <TemplateDetails template={selectedTemplate} />

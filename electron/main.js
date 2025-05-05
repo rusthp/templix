@@ -501,215 +501,470 @@ app.whenReady().then(() => {
   // Importar template do GitHub
   ipcMain.handle('import-from-github', async (event, repoUrl) => {
     try {
-      // Obter o nome do repositório do URL
-      const repoName = repoUrl.split('/').pop();
-      const apiUrl = repoUrl.replace('github.com', 'api.github.com/repos') + '/contents';
+      console.log(`Iniciando busca em: ${repoUrl}`);
       
-      // Buscar arquivos do repositório
-      const response = await axios.get(apiUrl);
-      
-      // Procurar arquivos XML e YAML
-      const templateFiles = response.data.filter(file => 
-        (file.name.toLowerCase().endsWith('.xml') || 
-         file.name.toLowerCase().endsWith('.yaml') || 
-         file.name.toLowerCase().endsWith('.yml')) && 
-        file.type === 'file'
-      );
-      
-      if (templateFiles.length === 0) {
-        return { error: 'Nenhum arquivo de template (XML/YAML) encontrado no repositório' };
+      // Validar URL do GitHub
+      const urlParts = repoUrl.match(/github\.com\/([^\/]+)\/([^\/\?#]+)/);
+      if (!urlParts || urlParts.length < 3) {
+        return { error: 'URL inválida', message: 'URL do repositório GitHub não reconhecida' };
       }
       
-      // Se encontrou mais de um arquivo de template, perguntar qual o usuário quer
-      let selectedFile;
-      if (templateFiles.length > 1) {
-        const fileOptions = templateFiles.map(file => {
-          // Extrair extensão para determinar o formato
-          const ext = path.extname(file.name).toLowerCase();
-          const format = (ext === '.xml') ? 'XML' : 'YAML';
+      const owner = urlParts[1];
+      const repo = urlParts[2].replace(/\.git$/, '');
+      
+      // Configurar autenticação para API GitHub
+      // NOTA: Este é um token temporário apenas para testes
+      // Em ambiente de produção, use variáveis de ambiente ou um sistema de armazenamento seguro
+      const headers = { 'Accept': 'application/vnd.github.v3+json' };
+      const TEMP_TOKEN = 'ghp_HMhFQ7aLdkgcpvJ7YSN0R3fpQRRBbf2FnHVZ';
+      
+      if (TEMP_TOKEN) {
+        headers['Authorization'] = `token ${TEMP_TOKEN}`;
+        console.log('Usando token para autenticação GitHub');
+      } else {
+        console.warn('Nenhum token GitHub configurado - limite de requisições será baixo');
+      }
+      
+      // Abordagem alternativa se a busca não funcionar: tentar buscar o conteúdo do repositório diretamente
+      const repoContentUrl = `https://api.github.com/repos/${owner}/${repo}/contents`;
+      console.log(`Buscando conteúdo do repositório em: ${repoContentUrl}`);
+      
+      try {
+        const contentResponse = await axios.get(repoContentUrl, { headers });
+        if (contentResponse.data && Array.isArray(contentResponse.data)) {
+          const files = contentResponse.data
+            .filter(item => {
+              if (item.type !== 'file') return false;
+              const ext = path.extname(item.name).toLowerCase();
+              return ['.xml', '.yaml', '.yml'].includes(ext);
+            })
+            .map(item => ({
+              name: item.name,
+              path: item.path,
+              api_url: item.url,
+              sha: item.sha
+            }));
+            
+          if (files.length > 0) {
+            console.log(`Encontrados ${files.length} arquivos diretamente no repositório`);
+            
+            // Se encontrou múltiplos arquivos, pedir para o usuário selecionar
+            if (files.length > 1) {
+              console.log('Múltiplos arquivos encontrados, retornando para seleção do usuário');
+              const fileOptions = files.map(file => {
+                const ext = path.extname(file.name).toLowerCase();
+                return {
+                  name: file.name,
+                  path: file.path,
+                  api_url: file.url, // Usar a URL retornada direto da API
+                  format: (ext === '.xml') ? 'XML' : 'YAML'
+                };
+              });
+              
+              return { filesToSelect: fileOptions, repoUrl };
+            }
+            
+            // Se encontrou apenas um arquivo, baixa e importa diretamente
+            console.log('Apenas um arquivo encontrado, baixando:', files[0].name);
+            return await importAndProcessSelectedFile(
+              files[0].api_url, 
+              files[0].name,
+              repoUrl, 
+              headers
+            );
+          }
+        }
+      } catch (contentError) {
+        console.error('Erro ao buscar conteúdo do repositório:', contentError.message);
+        // Continue para a próxima abordagem
+      }
+      
+      // Buscar arquivos XML e YAML no repositório usando Search API (com retry em diferentes formatos)
+      const extensions = ['xml', 'yaml', 'yml'];
+      let templateFiles = [];
+      let authError = false;
+      
+      for (const ext of extensions) {
+        try {
+          const searchQuery = `filename:*.${ext}+repo:${owner}/${repo}`;
+          console.log(`Buscando arquivos .${ext} com query: ${searchQuery}`);
           
+          const response = await axios.get('https://api.github.com/search/code', {
+            params: { q: searchQuery },
+            headers
+          });
+          
+          if (response.data && response.data.items && response.data.items.length > 0) {
+            const files = response.data.items.map(item => ({
+              name: item.name,
+              path: item.path,
+              api_url: item.url,
+              sha: item.sha
+            }));
+            
+            templateFiles.push(...files);
+            console.log(`Encontrados ${files.length} arquivos .${ext}`);
+          }
+        } catch (error) {
+          console.error(`Erro ao buscar .${ext}:`, error.message);
+          if (error.response && error.response.status === 401) {
+            authError = true;
+          }
+        }
+      }
+      
+      // Se não encontrou arquivos
+      if (templateFiles.length === 0) {
+        if (authError) {
+          return { 
+            error: 'Erro de autenticação', 
+            message: 'Não foi possível autenticar com a API do GitHub. Limite de requisições excedido.' 
+          };
+        }
+        
+        // Tentar uma última abordagem - buscar padrões comuns de diretórios
+        const commonPaths = [
+          'templates', 'zabbix', 'monitoring', 'config', 'configs',
+          'xml', 'yaml', 'yml', 'scripts', 'docs'
+        ];
+        
+        for (const commonPath of commonPaths) {
+          try {
+            const pathUrl = `https://api.github.com/repos/${owner}/${repo}/contents/${commonPath}`;
+            console.log(`Tentando caminho comum: ${commonPath}`);
+            
+            const pathResponse = await axios.get(pathUrl, { headers });
+            if (pathResponse.data && Array.isArray(pathResponse.data)) {
+              const files = pathResponse.data
+                .filter(item => {
+                  if (item.type !== 'file') return false;
+                  const ext = path.extname(item.name).toLowerCase();
+                  return ['.xml', '.yaml', '.yml'].includes(ext);
+                })
+                .map(item => ({
+                  name: item.name,
+                  path: item.path,
+                  api_url: item.url,
+                  sha: item.sha
+                }));
+                
+              if (files.length > 0) {
+                templateFiles.push(...files);
+                console.log(`Encontrados ${files.length} arquivos em /${commonPath}`);
+              }
+            }
+          } catch (pathError) {
+            // Ignorar erros de caminhos específicos
+          }
+        }
+        
+        // Se ainda não encontrou arquivos após todas as abordagens
+        if (templateFiles.length === 0) {
+          return { 
+            error: 'Nenhum template encontrado', 
+            message: 'Não foram encontrados arquivos .xml, .yaml ou .yml neste repositório' 
+          };
+        }
+      }
+      
+      // Remover duplicatas por SHA
+      templateFiles = Array.from(new Map(templateFiles.map(file => [file.sha, file])).values());
+      console.log(`Total de ${templateFiles.length} arquivos únicos encontrados`);
+      
+      // Se encontrou múltiplos arquivos, pedir para o usuário selecionar
+      if (templateFiles.length > 1) {
+        console.log('Múltiplos arquivos encontrados, retornando para seleção do usuário');
+        const fileOptions = templateFiles.map(file => {
+          const ext = path.extname(file.name).toLowerCase();
           return {
             name: file.name,
-            url: file.download_url,
-            info: `${file.name} (${format})`
+            path: file.path,
+            api_url: file.api_url,
+            format: (ext === '.xml') ? 'XML' : 'YAML'
           };
         });
         
-        const result = await dialog.showMessageBox(mainWindow, {
-          type: 'info',
-          title: 'Selecionar Template',
-          message: 'Múltiplos arquivos de template encontrados:',
-          detail: 'Selecione o arquivo que deseja importar. Se não tiver certeza, escolha o arquivo mais recente ou com o nome mais específico.',
-          buttons: fileOptions.map(file => file.info),
-          cancelId: -1,
-          noLink: true
-        });
-        
-        if (result.response === -1) {
-          return { canceled: true };
-        }
-        
-        selectedFile = fileOptions[result.response];
-      } else {
-        selectedFile = {
-          name: templateFiles[0].name,
-          url: templateFiles[0].download_url
-        };
+        return { filesToSelect: fileOptions, repoUrl };
       }
       
-      // Determinar formato do arquivo
-      const fileExt = path.extname(selectedFile.name).toLowerCase();
-      const isXml = fileExt === '.xml';
-      
-      // Baixar o conteúdo do arquivo
-      const fileResponse = await axios.get(selectedFile.url);
-      const fileContent = fileResponse.data;
-      
-      // Salvar o arquivo temporariamente
-      const tempPath = path.join(app.getPath('temp'), selectedFile.name);
-      fs.writeFileSync(tempPath, typeof fileContent === 'object' ? JSON.stringify(fileContent) : fileContent);
-      
-      // Processar o XML ou YAML
-      return new Promise((resolve, reject) => {
-        if (isXml) {
-          // Processar XML
-          parseString(fileContent, (err, result) => {
-            if (err) {
-              reject({ error: 'Erro ao analisar XML', message: err.message });
-            } else {
-              processTemplateData(result, 'xml');
-            }
-          });
-        } else {
-          // Processar YAML
-          try {
-            const yamlData = yaml.load(fileContent);
-            processTemplateData(yamlData, 'yaml');
-          } catch (error) {
-            reject({ error: 'Erro ao analisar YAML', message: error.message });
-          }
-        }
-        
-        // Função interna para processar os dados extraídos e salvar no banco
-        function processTemplateData(data, format) {
-          try {
-            let templateData = {};
-            
-            if (format === 'xml') {
-              const zabbixExport = data.zabbix_export;
-              const templates = zabbixExport.templates[0];
-              
-              // Corrigir a extração do nome do template
-              let templateName = '';
-              if (templates.template && templates.template[0]) {
-                // Se for string diretamente
-                if (typeof templates.template[0] === 'string') {
-                  templateName = templates.template[0];
-                } 
-                // Se for um objeto com propriedade _
-                else if (templates.template[0]._ && typeof templates.template[0]._ === 'string') {
-                  templateName = templates.template[0]._;
-                }
-                // Se for um objeto com propriedade name
-                else if (templates.template[0].name && typeof templates.template[0].name === 'string') {
-                  templateName = templates.template[0].name;
-                }
-                // Usar o nome do arquivo como último recurso
-                else {
-                  templateName = path.basename(selectedFile.name, path.extname(selectedFile.name));
-                }
-              } else if (templates.name) {
-                // Alguns formatos usam 'name' diretamente
-                templateName = templates.name;
-              } else {
-                // Fallback para o nome do arquivo
-                templateName = path.basename(selectedFile.name, path.extname(selectedFile.name));
-              }
-
-              // Se ainda assim for um objeto, use o nome do arquivo
-              if (typeof templateName === 'object') {
-                templateName = path.basename(selectedFile.name, path.extname(selectedFile.name));
-              }
-              
-              templateData = {
-                name: templateName,
-                version: zabbixExport.version ? (typeof zabbixExport.version[0] === 'string' ? zabbixExport.version[0] : 'N/A') : 'N/A',
-                description: templates.description ? (typeof templates.description[0] === 'string' ? templates.description[0] : '') : '',
-                filePath: tempPath,
-                source: 'github',
-                repoUrl: repoUrl,
-                format: 'xml'
-              };
-            } else {
-              // YAML
-              const templates = data.zabbix_export.templates[0] || data.zabbix_export.templates;
-              
-              // Corrigir a extração do nome do template de YAML
-              let templateName = '';
-              if (templates.template) {
-                // Se for string diretamente
-                if (typeof templates.template === 'string') {
-                  templateName = templates.template;
-                } 
-                // Se for um array
-                else if (Array.isArray(templates.template) && templates.template.length > 0) {
-                  templateName = typeof templates.template[0] === 'string' ? templates.template[0] : 'Template';
-                }
-                // Se for um objeto
-                else if (typeof templates.template === 'object') {
-                  templateName = templates.template.name || 'Template';
-                }
-              } else if (templates.name) {
-                // Alguns formatos usam 'name' diretamente
-                templateName = templates.name;
-              } else {
-                // Fallback para o nome do arquivo
-                templateName = path.basename(selectedFile.name, path.extname(selectedFile.name));
-              }
-
-              // Se ainda assim for um objeto, use o nome do arquivo
-              if (typeof templateName === 'object') {
-                templateName = path.basename(selectedFile.name, path.extname(selectedFile.name));
-              }
-              
-              templateData = {
-                name: templateName,
-                version: typeof data.zabbix_export.version === 'string' ? data.zabbix_export.version : 'N/A',
-                description: typeof templates.description === 'string' ? templates.description : '',
-                filePath: tempPath,
-                source: 'github',
-                repoUrl: repoUrl,
-                format: 'yaml'
-              };
-            }
-            
-            // Salvar no banco de dados
-            saveTemplateToDb(db, templateData, resolve, reject);
-          } catch (error) {
-            console.error("Erro ao processar dados do template:", error);
-            // Em caso de erro, usar nome do arquivo para o template
-            const templateName = path.basename(selectedFile.name, path.extname(selectedFile.name));
-            
-            const templateData = {
-              name: templateName,
-              version: 'N/A',
-              description: 'Erro ao processar detalhes do template',
-              filePath: tempPath,
-              source: 'github',
-              repoUrl: repoUrl,
-              format: fileExt === '.xml' ? 'xml' : 'yaml'
-            };
-            
-            // Salvar com dados básicos
-            saveTemplateToDb(db, templateData, resolve, reject);
-          }
-        }
-      });
+      // Se encontrou apenas um arquivo, baixa e importa diretamente
+      console.log('Apenas um arquivo encontrado, baixando:', templateFiles[0].name);
+      return await importAndProcessSelectedFile(
+        templateFiles[0].api_url, 
+        templateFiles[0].name, 
+        repoUrl, 
+        headers
+      );
     } catch (error) {
-      return { error: 'Erro ao importar do GitHub', message: error.message };
+      console.error('Erro ao importar do GitHub:', error);
+      let errorMessage = 'Erro desconhecido ao importar do GitHub';
+      
+      if (error.response) {
+        const status = error.response.status;
+        errorMessage = `Erro na API GitHub (${status}): ${error.response.data?.message || 'Erro de comunicação'}`;
+        
+        if (status === 403) {
+          errorMessage = 'Limite de requisições do GitHub excedido. Tente novamente mais tarde.';
+        } else if (status === 404) {
+          errorMessage = 'Repositório ou arquivo não encontrado no GitHub.';
+        } else if (status === 401) {
+          errorMessage = 'Erro de autenticação com o GitHub. Token inválido ou expirado.';
+        }
+      } else if (error.request) {
+        errorMessage = 'Erro de rede. Verifique sua conexão com a internet.';
+      }
+      
+      return { error: 'Falha na importação', message: errorMessage };
     }
   });
   
+  // NOVO HANDLER: Importa um arquivo específico selecionado pelo usuário
+  ipcMain.handle('import-selected-github-file', async (event, fileApiUrl, fileName, originalRepoUrl) => {
+    console.log(`Iniciando importação do arquivo selecionado: ${fileName}`);
+    try {
+      const headers = { 'Accept': 'application/vnd.github.v3+json' };
+      const githubToken = process.env.GITHUB_TOKEN;
+      
+      if (githubToken) {
+        headers['Authorization'] = `token ${githubToken}`;
+      }
+      
+      return await importAndProcessSelectedFile(fileApiUrl, fileName, originalRepoUrl, headers);
+    } catch (error) {
+      console.error(`Erro ao importar arquivo selecionado (${fileName}):`, error);
+      let errorMessage = 'Erro desconhecido ao importar arquivo';
+      
+      if (error.response) {
+        errorMessage = `Erro na API GitHub (${error.response.status}): ${error.response.data?.message || 'Erro de comunicação'}`;
+      } else if (error.request) {
+        errorMessage = 'Erro de rede. Verifique sua conexão com a internet.';
+      }
+      
+      return { error: 'Falha na importação', message: errorMessage };
+    }
+  });
+
+  // FUNÇÃO AUXILIAR: Baixa e processa um arquivo específico
+  async function importAndProcessSelectedFile(fileApiUrl, fileName, repoUrl, headers) {
+    try {
+      console.log("Baixando conteúdo de:", fileApiUrl);
+      
+      // Configurar headers específicos para baixar conteúdo raw
+      const downloadHeaders = { 
+        ...headers, 
+        'Accept': 'application/vnd.github.v3.raw' 
+      };
+      
+      // Fazer requisição para baixar o arquivo
+      const contentResponse = await axios.get(fileApiUrl, { headers: downloadHeaders });
+      const fileContent = contentResponse.data;
+      
+      // Salvar arquivo temporariamente
+      const tempDir = path.join(app.getPath('temp'), 'templix-imports');
+      if (!fs.existsSync(tempDir)) {
+        fs.mkdirSync(tempDir, { recursive: true });
+      }
+      
+      const uniqueFilename = `${Date.now()}-${fileName}`;
+      const tempPath = path.join(tempDir, uniqueFilename);
+      
+      // Converter para string se for objeto
+      const contentToWrite = typeof fileContent === 'object' 
+        ? JSON.stringify(fileContent, null, 2) 
+        : fileContent;
+        
+      fs.writeFileSync(tempPath, contentToWrite);
+      console.log("Arquivo salvo temporariamente em:", tempPath);
+      
+      // Determinar tipo de arquivo
+      const fileExt = path.extname(fileName).toLowerCase();
+      const isXml = fileExt === '.xml';
+      
+      return new Promise((resolve, reject) => {
+        try {
+          if (isXml) {
+            // Processar XML
+            parseString(fileContent, { explicitArray: false }, (err, result) => {
+              if (err) {
+                fs.unlinkSync(tempPath);
+                return reject({ error: 'Erro ao analisar XML', message: err.message });
+              }
+              
+              processTemplateData(result, 'xml', tempPath, repoUrl, fileName, resolve, reject);
+            });
+          } else {
+            // Processar YAML
+            try {
+              const yamlData = yaml.load(fileContent);
+              processTemplateData(yamlData, 'yaml', tempPath, repoUrl, fileName, resolve, reject);
+            } catch (yamlError) {
+              fs.unlinkSync(tempPath);
+              reject({ error: 'Erro ao analisar YAML', message: yamlError.message });
+            }
+          }
+        } catch (processingError) {
+          fs.unlinkSync(tempPath);
+          reject({ error: 'Erro ao processar arquivo', message: processingError.message });
+        }
+      });
+    } catch (downloadError) {
+      console.error("Erro ao baixar arquivo:", downloadError);
+      throw downloadError;
+    }
+  }
+
+  // Função para extrair dados e salvar template no banco de dados
+  function processTemplateData(data, format, tempPath, repoUrl, originalFileName, resolve, reject) {
+    try {
+      // Verificar estrutura do template
+      if (!data || !data.zabbix_export) {
+        throw new Error(`Estrutura de arquivo inválida: 'zabbix_export' não encontrado`);
+      }
+      
+      const zabbixExport = data.zabbix_export;
+      let templateName, templateVersion, templateDescription;
+      
+      // Tentar extrair template de diferentes estruturas possíveis
+      if (zabbixExport.templates) {
+        // Manipular diferentes estruturas de templates no XML/YAML
+        const templates = Array.isArray(zabbixExport.templates) 
+          ? zabbixExport.templates[0] 
+          : zabbixExport.templates;
+        
+        if (!templates) {
+          throw new Error("Estrutura de template inválida");
+        }
+        
+        // Tentar extrair nome do template de diferentes formatos de dados
+        if (templates.template) {
+          templateName = Array.isArray(templates.template) ? templates.template[0] : templates.template;
+        } else if (templates.name) {
+          templateName = templates.name;
+        } else {
+          throw new Error("Nome do template não encontrado");
+        }
+        
+        // Extrair descrição
+        templateDescription = templates.description || '';
+        if (Array.isArray(templateDescription)) {
+          templateDescription = templateDescription[0] || '';
+        }
+      } else {
+        // Fallback para nome do arquivo
+        templateName = path.basename(originalFileName, path.extname(originalFileName));
+        templateDescription = '';
+      }
+      
+      // Versão do Zabbix
+      templateVersion = zabbixExport.version || 'N/A';
+      if (Array.isArray(templateVersion)) {
+        templateVersion = templateVersion[0] || 'N/A';
+      }
+      
+      // Verificar se o template já existe
+      db.get('SELECT id FROM templates WHERE name = ?', [templateName], (err, row) => {
+        if (err) {
+          fs.unlinkSync(tempPath);
+          return reject({ error: 'Erro ao verificar template', message: err.message });
+        }
+        
+        if (row) {
+          // Template já existe
+          fs.unlinkSync(tempPath);
+          return resolve({ 
+            skipped: true, 
+            reason: 'duplicate', 
+            name: templateName 
+          });
+        }
+        
+        // Preparar dados para salvar
+        const templateData = {
+          name: templateName,
+          version: templateVersion,
+          description: templateDescription,
+          filePath: tempPath,
+          source: 'github',
+          repoUrl: repoUrl,
+          format: format
+        };
+        
+        // Salvar no banco de dados
+        db.run(
+          `INSERT INTO templates (name, version, description, file_path, source, format) 
+           VALUES (?, ?, ?, ?, ?, ?)`,
+          [
+            templateData.name, 
+            templateData.version, 
+            templateData.description, 
+            templateData.filePath, 
+            templateData.source, 
+            templateData.format
+          ],
+          function(err) {
+            if (err) {
+              fs.unlinkSync(tempPath);
+              reject({ error: 'Erro ao salvar', message: err.message });
+            } else {
+              console.log(`Template "${templateName}" importado com sucesso (ID: ${this.lastID})`);
+              templateData.id = this.lastID;
+              resolve({ success: true, ...templateData });
+            }
+          }
+        );
+      });
+      
+    } catch (error) {
+      console.error("Erro ao processar dados do template:", error);
+      
+      // Tentar salvar mesmo com erro, usando nome do arquivo
+      const fallbackName = path.basename(originalFileName, path.extname(originalFileName));
+      
+      db.get('SELECT id FROM templates WHERE name = ?', [fallbackName], (err, row) => {
+        if (err || row) {
+          fs.unlinkSync(tempPath);
+          return reject({ 
+            error: 'Erro no processamento', 
+            message: error.message 
+          });
+        }
+        
+        const fallbackData = {
+          name: fallbackName,
+          version: 'N/A',
+          description: `Importado com avisos: ${error.message}`,
+          filePath: tempPath,
+          source: 'github',
+          format: format
+        };
+        
+        db.run(
+          `INSERT INTO templates (name, version, description, file_path, source, format) 
+           VALUES (?, ?, ?, ?, ?, ?)`,
+          [
+            fallbackData.name, 
+            fallbackData.version, 
+            fallbackData.description, 
+            fallbackData.filePath, 
+            'github', 
+            format
+          ],
+          function(err) {
+            if (err) {
+              fs.unlinkSync(tempPath);
+              reject({ error: 'Erro ao salvar', message: err.message });
+            } else {
+              console.log(`Template salvo com nome alternativo: ${fallbackName}`);
+              fallbackData.id = this.lastID;
+              fallbackData.warning = error.message;
+              resolve({ success: true, ...fallbackData });
+            }
+          }
+        );
+      });
+    }
+  }
+
   // Converter template entre formatos XML e YAML
   ipcMain.handle('convert-template-format', async (event, options) => {
     try {

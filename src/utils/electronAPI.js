@@ -60,4 +60,15 @@ export const convertTemplateFormat = (templateId, targetFormat) => {
  */
 export const deleteTemplate = (templateId) => {
   return ipcRenderer.invoke('delete-template', templateId);
+};
+
+/**
+ * Importa um arquivo específico do GitHub após seleção do usuário
+ * @param {string} fileApiUrl - URL da API de conteúdo do arquivo selecionado
+ * @param {string} fileName - Nome do arquivo selecionado
+ * @param {string} originalRepoUrl - URL do repositório original
+ * @returns {Promise<Object>} Informações do template importado
+ */
+export const importSelectedGithubFile = (fileApiUrl, fileName, originalRepoUrl) => {
+  return ipcRenderer.invoke('import-selected-github-file', fileApiUrl, fileName, originalRepoUrl);
 }; 
