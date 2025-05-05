@@ -1,52 +1,74 @@
 {
   "name": "templix",
   "version": "1.0.0",
-  "description": "Templix - Gerenciador de Templates Zabbix",
+  "description": "Gerenciador de Templates Zabbix",
+  "author": "Your Name",
+  "homepage": "./",
   "main": "electron/main.js",
+  "private": true,
+  "dependencies": {
+    "@electron/remote": "^2.0.10",
+    "@testing-library/jest-dom": "^5.17.0",
+    "@testing-library/react": "^13.4.0",
+    "@testing-library/user-event": "^13.5.0",
+    "axios": "^1.5.0",
+    "electron-is-dev": "^2.0.0",
+    "js-yaml": "^4.1.0",
+    "react": "^18.2.0",
+    "react-dom": "^18.2.0",
+    "react-scripts": "5.0.1",
+    "sqlite3": "^5.1.6",
+    "web-vitals": "^2.1.4",
+    "xml2js": "^0.6.2"
+  },
   "scripts": {
-    "start": "concurrently \"npm run start:react\" \"npm run start:electron\"",
-    "start:react": "cross-env BROWSER=none react-app-rewired start",
-    "start:electron": "wait-on http://localhost:3000 && electron .",
-    "build": "react-app-rewired build && electron-builder",
-    "test": "react-app-rewired test",
-    "eject": "react-scripts eject"
+    "start": "react-scripts start",
+    "build": "react-scripts build",
+    "test": "react-scripts test",
+    "eject": "react-scripts eject",
+    "electron": "electron .",
+    "electron-dev": "concurrently \"cross-env BROWSER=none npm start\" \"wait-on http://localhost:3000 && electron .\"",
+    "electron-pack": "npm run build && electron-builder build --win --publish never",
+    "dist": "electron-builder --win",
+    "dist-all": "electron-builder -mwl",
+    "postinstall": "electron-builder install-app-deps"
   },
   "build": {
-    "appId": "com.zabbix.templix",
+    "appId": "com.templix.app",
     "productName": "Templix",
+    "directories": {
+      "buildResources": "assets",
+      "output": "dist"
+    },
     "files": [
       "build/**/*",
-      "electron/**/*"
+      "electron/**/*",
+      "node_modules/**/*",
+      "package.json"
     ],
-    "directories": {
-      "buildResources": "assets"
+    "win": {
+      "target": [
+        {
+          "target": "nsis",
+          "arch": ["x64"]
+        },
+        {
+          "target": "portable"
+        }
+      ],
+      "icon": "assets/icon.ico"
+    },
+    "nsis": {
+      "oneClick": false,
+      "allowToChangeInstallationDirectory": true,
+      "createDesktopShortcut": true
     }
   },
-  "keywords": [
-    "zabbix",
-    "template",
-    "manager",
-    "electron"
-  ],
-  "author": "",
-  "license": "ISC",
-  "dependencies": {
-    "@electron/remote": "^2.1.2",
-    "axios": "^1.9.0",
-    "concurrently": "^9.1.2",
-    "cross-env": "^7.0.3",
-    "electron": "^36.1.0",
-    "electron-builder": "^26.0.12",
-    "electron-is-dev": "^3.0.1",
-    "js-yaml": "^4.1.0",
-    "path-browserify": "^1.0.1",
-    "react": "^19.1.0",
-    "react-dom": "^19.1.0",
-    "react-scripts": "^5.0.1",
-    "sqlite3": "^5.1.7",
-    "wait-on": "^8.0.3",
-    "xml2js": "^0.6.2",
-    "xmlbuilder": "^15.1.1"
+  "eslintConfig": {
+    "extends": [
+      "react-app",
+      "react-app/jest"
+    ]
   },
   "browserslist": {
     "production": [
@@ -61,6 +83,10 @@
     ]
   },
   "devDependencies": {
-    "react-app-rewired": "^2.2.1"
+    "concurrently": "^8.2.1",
+    "cross-env": "^7.0.3",
+    "electron": "^26.3.0",
+    "electron-builder": "^24.6.4",
+    "wait-on": "^7.0.1"
   }
 }
