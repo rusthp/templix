@@ -10,7 +10,7 @@
   cursor: pointer;
   color: var(--text-color, #333);
   transition: background-color 0.2s, transform 0.1s;
-  margin-left: 8px;
+  margin-left: 10px;
 }
 
 .settings-button:hover {
