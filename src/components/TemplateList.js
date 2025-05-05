@@ -15,15 +15,12 @@ const TemplateList = ({ templates, onSelectTemplate, selectedTemplate, onExportT
   const handleRefresh = () => {
     setIsRefreshing(true);
     
-    // Se uma função de callback foi fornecida, chamá-la
     if (typeof onRefresh === 'function') {
       Promise.resolve(onRefresh())
         .finally(() => {
-          // Após concluir (sucesso ou erro), parar a animação após 500ms
           setTimeout(() => setIsRefreshing(false), 500);
         });
     } else {
-      // Se não houver callback, apenas animação visual por 1 segundo
       setTimeout(() => setIsRefreshing(false), 1000);
     }
   };
@@ -42,10 +39,8 @@ const TemplateList = ({ templates, onSelectTemplate, selectedTemplate, onExportT
   // Função para alternar seleção (se clicar no mesmo template, ele será deselect)
   const toggleTemplateSelection = (template) => {
     if (selectedTemplate && selectedTemplate.id === template.id) {
-      // Está selecionando o mesmo template, então remove a seleção
       onSelectTemplate(null);
     } else {
-      // Selecionando um template diferente
       onSelectTemplate(template);
     }
   };
@@ -54,12 +49,9 @@ const TemplateList = ({ templates, onSelectTemplate, selectedTemplate, onExportT
   const getBaseName = (filePath, extension) => {
     if (!filePath) return '';
     
-    // Normaliza os separadores para '/'
     const normalizedPath = filePath.replace(/\\/g, '/');
-    // Pega a última parte do caminho após a última '/'
     const fileName = normalizedPath.split('/').pop();
     
-    // Remove a extensão se fornecida
     if (extension && fileName.endsWith(extension)) {
       return fileName.slice(0, -extension.length);
     }
@@ -70,7 +62,6 @@ const TemplateList = ({ templates, onSelectTemplate, selectedTemplate, onExportT
   const getExtension = (filePath) => {
     if (!filePath) return '';
     
-    // Pega a extensão do arquivo (tudo após o último ponto)
     const parts = filePath.split('.');
     return parts.length > 1 ? `.${parts.pop()}` : '';
   };
@@ -79,7 +70,6 @@ const TemplateList = ({ templates, onSelectTemplate, selectedTemplate, onExportT
   const getTemplateName = (template) => {
     if (!template.name) return "Template sem nome";
     
-    // Se o nome for um objeto, tentar extrair uma string ou usar um valor padrão
     if (typeof template.name === 'object') {
       return template.file_path 
         ? getBaseName(template.file_path, getExtension(template.file_path)) 
@@ -93,7 +83,6 @@ const TemplateList = ({ templates, onSelectTemplate, selectedTemplate, onExportT
   const requestSort = (key) => {
     let direction = 'ascending';
     
-    // Se já estamos ordenando por esta chave, apenas inverte a direção
     if (sortConfig.key === key && sortConfig.direction === 'ascending') {
       direction = 'descending';
     }
@@ -103,12 +92,10 @@ const TemplateList = ({ templates, onSelectTemplate, selectedTemplate, onExportT
   
   // Ordenar os templates de acordo com a configuração atual
   const sortedTemplates = React.useMemo(() => {
-    // Cria uma cópia para não modificar o array original
     let sortableItems = [...templates];
     
     if (sortConfig.key) {
       sortableItems.sort((a, b) => {
-        // Determina os valores a serem comparados com base na chave de ordenação
         let aValue, bValue;
         
         switch(sortConfig.key) {
@@ -117,11 +104,9 @@ const TemplateList = ({ templates, onSelectTemplate, selectedTemplate, onExportT
             bValue = getTemplateName(b).toLowerCase();
             break;
           case 'version':
-            // Converte as versões em arrays de números para comparação correta
-            aValue = (a.version || '0.0').split('.').map(num => parseInt(num));
-            bValue = (b.version || '0.0').split('.').map(num => parseInt(num));
+            aValue = (a.version || '0.0').split('.').map(num => parseInt(num, 10));
+            bValue = (b.version || '0.0').split('.').map(num => parseInt(num, 10));
             
-            // Compara cada parte da versão
             for (let i = 0; i < Math.max(aValue.length, bValue.length); i++) {
               const aNum = i < aValue.length ? aValue[i] : 0;
               const bNum = i < bValue.length ? bValue[i] : 0;
@@ -130,7 +115,7 @@ const TemplateList = ({ templates, onSelectTemplate, selectedTemplate, onExportT
                 return sortConfig.direction === 'ascending' ? aNum - bNum : bNum - aNum;
               }
             }
-            return 0; // Versões são idênticas
+            return 0;
           case 'format':
             aValue = (a.format || 'xml').toLowerCase();
             bValue = (b.format || 'xml').toLowerCase();
@@ -143,10 +128,8 @@ const TemplateList = ({ templates, onSelectTemplate, selectedTemplate, onExportT
             return 0;
         }
         
-        // Para a versão, já retornamos diretamente na switch
         if (sortConfig.key === 'version') return 0;
         
-        // Comparação geral para strings
         if (aValue < bValue) {
           return sortConfig.direction === 'ascending' ? -1 : 1;
         }
@@ -168,47 +151,48 @@ const TemplateList = ({ templates, onSelectTemplate, selectedTemplate, onExportT
   
   return (
     <div className="template-list-container">
-      <div className="template-list">
-        <div className="template-list-header">
-          <div 
-            className={`header-cell template-name ${getClassNamesFor('name')}`} 
-            onClick={() => requestSort('name')}
-          >
-            Nome
-          </div>
-          <div 
-            className={`header-cell template-version ${getClassNamesFor('version')}`}
-            onClick={() => requestSort('version')}
-          >
-            Versão
-          </div>
-          <div 
-            className={`header-cell template-format ${getClassNamesFor('format')}`}
-            onClick={() => requestSort('format')}
-          >
-            Formato
-          </div>
-          <div 
-            className={`header-cell template-source ${getClassNamesFor('source')}`}
-            onClick={() => requestSort('source')}
-          >
-            Origem
-          </div>
-          <div className="header-cell template-actions actions-header">Ações</div>
-        </div>
-        
-        <div className="template-list-body">
+      <table className="template-list">
+        <thead>
+          <tr>
+            <th 
+              className={`name ${getClassNamesFor('name')}`} 
+              onClick={() => requestSort('name')}
+            >
+              Nome
+            </th>
+            <th 
+              className={`version ${getClassNamesFor('version')}`}
+              onClick={() => requestSort('version')}
+            >
+              Versão
+            </th>
+            <th 
+              className={`format ${getClassNamesFor('format')}`}
+              onClick={() => requestSort('format')}
+            >
+              Formato
+            </th>
+            <th 
+              className={`source ${getClassNamesFor('source')}`}
+              onClick={() => requestSort('source')}
+            >
+              Origem
+            </th>
+            <th className="actions actions-header">Ações</th>
+          </tr>
+        </thead>
+        <tbody>
           {sortedTemplates.map(template => (
-            <div 
+            <tr 
               key={template.id} 
-              className={`template-item ${selectedTemplate && selectedTemplate.id === template.id ? 'selected' : ''}`}
+              className={selectedTemplate && selectedTemplate.id === template.id ? 'selected' : ''}
               onClick={() => toggleTemplateSelection(template)}
             >
-              <div className="template-cell template-name">{getTemplateName(template)}</div>
-              <div className="template-cell template-version">{template.version || 'N/A'}</div>
-              <div className="template-cell template-format">{(template.format || 'xml').toUpperCase()}</div>
-              <div className="template-cell template-source">{template.source === 'local' ? 'Local' : 'GitHub'}</div>
-              <div className="template-cell template-actions actions">
+              <td className="name">{getTemplateName(template)}</td>
+              <td className="version">{template.version || 'N/A'}</td>
+              <td className="format">{(template.format || 'xml').toUpperCase()}</td>
+              <td className="source">{template.source === 'local' ? 'Local' : 'GitHub'}</td>
+              <td className="actions">
                 <button 
                   className="action-btn export-btn"
                   onClick={(e) => {
@@ -223,20 +207,18 @@ const TemplateList = ({ templates, onSelectTemplate, selectedTemplate, onExportT
                   className="action-btn convert-btn"
                   onClick={(e) => {
                     e.stopPropagation();
-                    // Determinar o formato alvo (oposto ao formato atual)
                     const currentFormat = (template.format || 'xml').toLowerCase();
                     const targetFormat = currentFormat === 'xml' ? 'yaml' : 'xml';
                     onConvertFormat(template.id, targetFormat);
                   }} 
                   title={`Converter para ${(template.format || 'xml').toLowerCase() === 'xml' ? 'YAML' : 'XML'}`}
                 >
-                  Converter para {(template.format || 'xml').toLowerCase() === 'xml' ? 'YAML' : 'XML'}
+                  Converter
                 </button>
                 <button 
                   className="action-btn delete-btn"
                   onClick={(e) => {
                     e.stopPropagation();
-                    // Confirmação antes de excluir com nome limpo
                     const templateName = getTemplateName(template);
                     if (window.confirm(`Tem certeza que deseja excluir o template "${templateName}"?`)) {
                       onDeleteTemplate(template.id);
@@ -246,11 +228,11 @@ const TemplateList = ({ templates, onSelectTemplate, selectedTemplate, onExportT
                 >
                   Excluir
                 </button>
-              </div>
-            </div>
+              </td>
+            </tr>
           ))}
-        </div>
-      </div>
+        </tbody>
+      </table>
       <RefreshButton onClick={handleRefresh} isRefreshing={isRefreshing} />
     </div>
   );

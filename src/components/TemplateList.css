@@ -2,145 +2,136 @@
 .template-list-container {
   width: 100%;
   padding: 15px;
-  overflow: auto;
   position: relative;
 }
 
 /* Estilo da tabela */
 .template-list {
   width: 100%;
-  display: table;
-  table-layout: fixed;
   border-collapse: collapse;
-  border-radius: 8px;
-  overflow: hidden;
   box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
   background-color: #fff;
+  border-radius: 8px;
+  overflow: hidden;
 }
 
-/* Cabeçalho */
-.template-list-header {
-  display: table-row;
+/* Cabeçalho da tabela */
+.template-list thead {
   background-color: #f0f8ff;
-  font-weight: bold;
 }
 
-.header-cell {
-  display: table-cell;
+.template-list th {
   padding: 12px 15px;
   text-align: center;
+  font-weight: bold;
+  border-bottom: 2px solid #ddd;
+  border-right: 1px solid #ddd;
   cursor: pointer;
   position: relative;
-  transition: background-color 0.2s;
-  border-right: 1px solid #ddd;
-  border-bottom: 2px solid #ddd;
-  vertical-align: middle;
   height: 50px;
-  box-sizing: border-box;
 }
 
-.header-cell:last-child {
+.template-list th:last-child {
   border-right: none;
 }
 
-.header-cell:hover {
+.template-list th:hover {
   background-color: #e6f2ff;
 }
 
 /* Indicadores de ordenação */
-.header-cell.sort-ascending::after {
+.template-list th.sort-ascending::after {
   content: "▲";
   margin-left: 8px;
   font-size: 10px;
 }
 
-.header-cell.sort-descending::after {
+.template-list th.sort-descending::after {
   content: "▼";
   margin-left: 8px;
   font-size: 10px;
 }
 
-/* Cabeçalho de ações (não ordenável) */
-.actions-header {
-  cursor: default !important;
+/* Cabeçalho de ações */
+.template-list th.actions-header {
+  cursor: default;
 }
 
-.actions-header:hover {
-  background-color: #f0f8ff !important;
+.template-list th.actions-header:hover {
+  background-color: #f0f8ff;
 }
 
 /* Corpo da tabela */
-.template-list-body {
-  display: block;
+.template-list tbody {
   max-height: 500px;
   overflow-y: auto;
 }
 
 /* Linhas da tabela */
-.template-item {
-  display: table-row;
+.template-list tr {
   border-bottom: 1px solid #eee;
   transition: background-color 0.2s;
   cursor: pointer;
 }
 
-.template-item:hover {
+.template-list tbody tr:hover {
   background-color: #f9f9f9;
 }
 
-.template-item.selected {
+.template-list tr.selected {
   background-color: #e6f7ff;
   border-left: 4px solid #1890ff;
 }
 
 /* Células da tabela */
-.template-cell {
-  display: table-cell;
+.template-list td {
   padding: 12px 15px;
   text-align: center;
   border-right: 1px solid #eee;
-  vertical-align: middle;
-  min-height: 50px;
+  height: 50px;
   box-sizing: border-box;
   word-break: break-word;
 }
 
-.template-cell:last-child {
+.template-list td:last-child {
   border-right: none;
 }
 
-/* Define larguras específicas das colunas */
-.template-name {
-  width: 30%;
+.template-list td.name {
   text-align: left;
+  width: 30%;
 }
 
-.template-version, .template-format, .template-source {
+.template-list td.version,
+.template-list td.format,
+.template-list td.source {
   width: 15%;
 }
 
-.template-actions {
+.template-list td.actions {
   width: 25%;
 }
 
-/* Botões de ação */
-.template-cell.actions {
-  text-align: center;
+/* Ajuste para telas menores */
+@media (max-width: 768px) {
+  .template-list td.actions {
+    width: auto;
+  }
 }
 
-.action-btn {
+/* Botões de ação */
+.template-list .action-btn {
   padding: 6px 10px;
+  margin: 2px 3px;
   border: none;
   border-radius: 4px;
   cursor: pointer;
   font-size: 12px;
   transition: background-color 0.2s, transform 0.1s;
-  white-space: nowrap;
-  margin: 2px;
   display: inline-block;
 }
 
-.action-btn:hover {
+.template-list .action-btn:hover {
   transform: translateY(-2px);
   box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
 }
